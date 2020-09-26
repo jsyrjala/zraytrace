@@ -1,87 +1,38 @@
+//! Basic vector maths
 const std = @import("std");
-const meta = std.meta;
-//
-// const Vector = meta.Vector;
-const eql = meta.eql;
+const base = @import("base.zig");
+const mem = std.mem;
+const time = std.time;
 const math = std.math;
 const Random = std.rand.Random;
-const DefaultPrng = std.rand.DefaultPrng;
 const ArrayList = std.ArrayList;
 
-// https://ziglearn.org/chapter-1/#vectors
+const Allocator = mem.Allocator;
 
-const Vec3Float = f32;
-
-const Vec3 = @Vector(3, Vec3Float);
-
-pub fn newVec3(x: f32, y: f32, z: f32) Vec3 {
-    return Vec3{x, y, z};
-}
-
-pub inline fn dot(self: Vec3, other: Vec3) f32 {
-    return self[0] * other[0] + self[1] * other[1] + self[2] * other[2];
-}
-
-pub inline fn cross(u: Vec3, v: Vec3) Vec3 {
-    return newVec3(u[1] * v[2] - u[2] * v[1],
-                   u[2] * v[0] - u[0] * v[2],
-                   u[0] * v[1] - u[1] * v[0]);
-}
-
-pub inline fn length_squared(u: Vec3) f32 {
-    return u[0] * u[0] + u[1] * u[1] + u[2] * u[2];
-}
-
-pub inline fn length(u: Vec3) f32 {
-    return math.sqrt(length_squared(u));
-}
-
-pub inline fn unit_vector(u: Vec3) Vec3 {
-    const len = length(u);
-    return newVec3(u[0] / len, u[1] / len, u[2] / len);
-}
-
-pub inline fn negate(u: Vec3) Vec3 {
-    return -u;
-}
-
-pub fn center(vectors: ArrayList(Vec3)) Vec3 {
-    const len_scale = 1.0 / @intToFloat(f32, vectors.items.len);
-    var x_sum: f32 = 0.0;
-    var y_sum: f32 = 0.0;
-    var z_sum: f32 = 0.0;
-    for (vectors.items) |vector, i| {
-        x_sum += vector[0] * len_scale;
-        y_sum += vector[1] * len_scale;
-        z_sum += vector[2] * len_scale;
-    }
-    return newVec3(x_sum, y_sum, z_sum);
-}
-
-const Vec3Float = f32;
+const BaseFloat = base.BaseFloat;
 
 pub const Vec3 = struct {
-    _x: Vec3Float,
-    _y: Vec3Float,
-    _z: Vec3Float,
+    _x: BaseFloat,
+    _y: BaseFloat,
+    _z: BaseFloat,
 
-    pub inline fn x(v: Vec3) Vec3Float {
+    pub inline fn x(v: Vec3) BaseFloat {
         return v._x;
     }
 
-    pub inline fn y(v: Vec3) Vec3Float {
+    pub inline fn y(v: Vec3) BaseFloat {
         return v._y;
     }
 
-    pub inline fn z(v: Vec3) Vec3Float {
+    pub inline fn z(v: Vec3) BaseFloat {
         return v._z;
     }
 
-    pub fn init(_x: Vec3Float, _y: Vec3Float, _z: Vec3Float) Vec3 {
+    pub fn init(_x: BaseFloat, _y: BaseFloat, _z: BaseFloat) Vec3 {
         return Vec3{._x = _x, ._y = _y, ._z = _z};
     }
 
-    pub inline fn dot(self: Vec3, other: Vec3) Vec3Float {
+    pub inline fn dot(self: Vec3, other: Vec3) BaseFloat {
         return self._x * other._x + self._y * other._y + self._z * other._x;
     }
 
@@ -91,11 +42,11 @@ pub const Vec3 = struct {
                          u._x * v._y - u._y * v._x);
     }
 
-    pub inline fn length_squared(self: Vec3) Vec3Float {
+    pub inline fn length_squared(self: Vec3) BaseFloat {
         return self._x * self._x + self._y * self._y + self._z * self._z;
     }
 
-    pub inline fn length(self: Vec3) Vec3Float {
+    pub inline fn length(self: Vec3) BaseFloat {
         return math.sqrt(self.length_squared());
     }
 
@@ -118,24 +69,24 @@ pub const Vec3 = struct {
         return Vec3.init(self._x - other._x, self._y - other._y, self._z - other._z);
     }
 
-    pub inline fn plusScalar(self: Vec3, scalar: Vec3Float) Vec3 {
+    pub inline fn plusScalar(self: Vec3, scalar: BaseFloat) Vec3 {
         return Vec3.init(self._x + scalar, self._y + scalar, self._z + scalar);
     }
 
-    pub inline fn minusScalar(self: Vec3, scalar: Vec3Float) Vec3 {
+    pub inline fn minusScalar(self: Vec3, scalar: BaseFloat) Vec3 {
         return Vec3.init(self._x - scalar, self._y - scalar, self._z - scalar);
     }
 
-    pub inline fn scale(self: Vec3, scalar: Vec3Float) Vec3 {
+    pub inline fn scale(self: Vec3, scalar: BaseFloat) Vec3 {
         return Vec3.init(self._x * scalar, self._y * scalar, self._z * scalar);
     }
 
-    pub inline fn multiply(self: Vec3, scalar: Vec3Float) Vec3 {
+    pub inline fn multiply(self: Vec3, scalar: BaseFloat) Vec3 {
         return Vec3.init(self._x * scalar, self._y * scalar, self._z * scalar);
     }
 
     // Divide vector by scalar
-    pub inline fn divide(self: Vec3, scalar: Vec3Float) Vec3 {
+    pub inline fn divide(self: Vec3, scalar: BaseFloat) Vec3 {
         return Vec3.init(self._x / scalar, self._y / scalar, self._z / scalar);
     }
 
@@ -153,10 +104,10 @@ pub const Vec3 = struct {
 
     /// Returns a center point for vectors
     pub fn center(vectors: ArrayList(Vec3)) Vec3 {
-        const len_scale = 1.0 / @intToFloat(Vec3Float, vectors.items.len);
-        var x_sum: Vec3Float = 0.0;
-        var y_sum: Vec3Float = 0.0;
-        var z_sum: Vec3Float = 0.0;
+        const len_scale = 1.0 / @intToFloat(BaseFloat, vectors.items.len);
+        var x_sum: BaseFloat = 0.0;
+        var y_sum: BaseFloat = 0.0;
+        var z_sum: BaseFloat = 0.0;
         for (vectors.items) |*vector, i| {
             x_sum += vector._x * len_scale;
             y_sum += vector._y * len_scale;
@@ -167,11 +118,11 @@ pub const Vec3 = struct {
 
     /// Generate random vector where each
     /// coordinate is between min and max.
-    pub inline fn random_vector(random: *Random, min: Vec3Float, max: Vec3Float) Vec3 {
+    pub inline fn random_vector(random: *Random, min: BaseFloat, max: BaseFloat) Vec3 {
         var r = DefaultPrng.init(0).random;
-        const x_val = random.float(Vec3Float) * 2.0 - 1.0;
-        const y_val = random.float(Vec3Float) * 2.0 - 1.0;
-        const z_val = random.float(Vec3Float) * 2.0 - 1.0;
+        const x_val = random.float(BaseFloat) * 2.0 - 1.0;
+        const y_val = random.float(BaseFloat) * 2.0 - 1.0;
+        const z_val = random.float(BaseFloat) * 2.0 - 1.0;
         return Vec3.init(x_val, y_val, z_val);
     }
 
@@ -202,8 +153,6 @@ pub const Vec3 = struct {
     }
 };
 
-
-
 ///// Testing
 const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
@@ -213,9 +162,9 @@ test "Vec3.dot" {
     const vec_0 = Vec3.init(0.0, 0.0, 0.0);
     const vec_unit_x = Vec3.init(1.0, 0.0, 0.0);
     const vec_unit_y = Vec3.init(0.0, 1.0, 0.0);
-    expectEqual(@as(Vec3Float, 0.0), vec_0.dot(vec_unit_x));
-    expectEqual(@as(Vec3Float, 0.0), vec_unit_x.dot(vec_unit_y));
-    expectEqual(@as(Vec3Float, 1.0), vec_unit_x.dot(vec_unit_x));
+    expectEqual(@as(BaseFloat, 0.0), vec_0.dot(vec_unit_x));
+    expectEqual(@as(BaseFloat, 0.0), vec_unit_x.dot(vec_unit_y));
+    expectEqual(@as(BaseFloat, 1.0), vec_unit_x.dot(vec_unit_x));
 }
 
 test "Vec3.unit_vector() with zero length vector" {
@@ -240,9 +189,9 @@ test "Vec3.center with zero vectors" {
     defer list.deinit();
 
     const center_vector = Vec3.center(list);
-    expectEqual(@as(Vec3Float, 0.0), center_vector.x());
-    expectEqual(@as(Vec3Float, 0.0), center_vector.y());
-    expectEqual(@as(Vec3Float, 0.0), center_vector.z());
+    expectEqual(@as(BaseFloat, 0.0), center_vector.x());
+    expectEqual(@as(BaseFloat, 0.0), center_vector.y());
+    expectEqual(@as(BaseFloat, 0.0), center_vector.z());
 }
 
 test "Vec3.center() with one vectors" {
@@ -253,9 +202,9 @@ test "Vec3.center() with one vectors" {
     const vec1 = Vec3.init(1.0, 2.0, 4.0);
     try list.append(vec1);
     const center_vector = Vec3.center(list);
-    expectEqual(@as(Vec3Float, 1.0), center_vector.x());
-    expectEqual(@as(Vec3Float, 2.0), center_vector.y());
-    expectEqual(@as(Vec3Float, 4.0), center_vector.z());
+    expectEqual(@as(BaseFloat, 1.0), center_vector.x());
+    expectEqual(@as(BaseFloat, 2.0), center_vector.y());
+    expectEqual(@as(BaseFloat, 4.0), center_vector.z());
 }
 
 test "Vec3.center() with three vectors" {
@@ -270,9 +219,9 @@ test "Vec3.center() with three vectors" {
     try list.append(vec2);
     try list.append(vec3);
     const center_vector = Vec3.center(list);
-    expectEqual(@as(Vec3Float, -1.0), center_vector.x());
-    expectEqual(@as(Vec3Float, 2.0), center_vector.y());
-    expectEqual(@as(Vec3Float, -4.0), center_vector.z());
+    expectEqual(@as(BaseFloat, -1.0), center_vector.x());
+    expectEqual(@as(BaseFloat, 2.0), center_vector.y());
+    expectEqual(@as(BaseFloat, -4.0), center_vector.z());
 }
 
 test "random_vector()" {
