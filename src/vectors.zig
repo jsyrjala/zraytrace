@@ -10,38 +10,38 @@ const Allocator = mem.Allocator;
 const Vec3Float = f32;
 
 pub const Vec3 = struct {
-    x: Vec3Float,
-    y: Vec3Float,
-    z: Vec3Float,
+    _x: Vec3Float,
+    _y: Vec3Float,
+    _z: Vec3Float,
 
-    pub inline fn xx(v: Vec3) f32 {
-        return v.x;
+    pub inline fn x(v: Vec3) f32 {
+        return v._x;
     }
 
-    pub inline fn yy(v: Vec3) f32 {
-        return v.y;
+    pub inline fn y(v: Vec3) f32 {
+        return v._y;
     }
 
-    pub inline fn zz(v: Vec3) f32 {
-        return v.z;
+    pub inline fn z(v: Vec3) f32 {
+        return v._z;
     }
 
-    pub fn init(x: f32, y: f32, z: f32) Vec3 {
-        return Vec3{.x = x, .y = y, .z = z};
+    pub fn init(_x: f32, _y: f32, _z: f32) Vec3 {
+        return Vec3{._x = _x, ._y = _y, ._z = _z};
     }
 
     pub inline fn dot(self: Vec3, other: Vec3) f32 {
-        return self.x * other.x + self.y * other.y + self.z * other.x;
+        return self._x * other._x + self._y * other._y + self._z * other._x;
     }
 
     pub inline fn cross(u:Vec3, v:Vec3) Vec3 {
-        return Vec3.init(u.y * v.z - u.z * v.y,
-                         u.z * v.x - u.x * v.z,
-                         u.x * v.y - u.y * v.x);
+        return Vec3.init(u._y * v._z - u._z * v._y,
+                         u._z * v._x - u._x * v._z,
+                         u._x * v._y - u._y * v._x);
     }
 
     pub inline fn length_squared(self: Vec3) f32 {
-        return self.x * self.x + self.y * self.y + self.z * self.z;
+        return self._x * self._x + self._y * self._y + self._z * self._z;
     }
 
     pub inline fn length(self: Vec3) f32 {
@@ -51,41 +51,41 @@ pub const Vec3 = struct {
     pub inline fn unit_vector(self: Vec3) Vec3 {
         // TODO divide by zero
         const len = self.length();
-        return Vec3.init(self.x / len, self.y / len, self.z / len);
+        return Vec3.init(self._x / len, self._y / len, self._z / len);
     }
 
     pub inline fn negate(self: Vec3) Vec3 {
         // uses stack
-        return Vec3.init(-self.x, -self.y, -self.z);
+        return Vec3.init(-self._x, -self._y, -self._z);
     }
 
     pub inline fn plus(self: Vec3, other: Vec3) Vec3 {
-        return Vec3.init(self.x + other.x, self.y + other.y, self.z + other.z);
+        return Vec3.init(self._x + other._x, self._y + other._y, self._z + other._z);
     }
 
     pub inline fn minus(self: Vec3, other: Vec3) Vec3 {
-        return Vec3.init(self.x - other.x, self.y - other.y, self.z - other.z);
+        return Vec3.init(self._x - other._x, self._y - other._y, self._z - other._z);
     }
 
     pub inline fn plusScalar(self: Vec3, scalar: f32) Vec3 {
-        return Vec3.init(self.x + scalar, self.y + scalar, self.z + scalar);
+        return Vec3.init(self._x + scalar, self._y + scalar, self._z + scalar);
     }
 
     pub inline fn minusScalar(self: Vec3, scalar: f32) Vec3 {
-        return Vec3.init(self.x - scalar, self.y - scalar, self.z - scalar);
+        return Vec3.init(self._x - scalar, self._y - scalar, self._z - scalar);
     }
 
     pub inline fn scale(self: Vec3, scalar: f32) Vec3 {
-        return Vec3.init(self.x * scalar, self.y * scalar, self.z * scalar);
+        return Vec3.init(self._x * scalar, self._y * scalar, self._z * scalar);
     }
 
     pub inline fn multiply(self: Vec3, scalar: f32) Vec3 {
-        return Vec3.init(self.x * scalar, self.y * scalar, self.z * scalar);
+        return Vec3.init(self._x * scalar, self._y * scalar, self._z * scalar);
     }
 
     // Divide vector by scalar
     pub inline fn divide(self: Vec3, scalar: f32) Vec3 {
-        return Vec3.init(self.x / scalar, self.y / scalar, self.z / scalar);
+        return Vec3.init(self._x / scalar, self._y / scalar, self._z / scalar);
     }
 
     /// Reflection of a ray from fully reflecting surface
@@ -107,9 +107,9 @@ pub const Vec3 = struct {
         var y_sum: f32 = 0.0;
         var z_sum: f32 = 0.0;
         for (vectors.items) |*vector, i| {
-            x_sum += vector.x * len_scale;
-            y_sum += vector.y * len_scale;
-            z_sum += vector.z * len_scale;
+            x_sum += vector._x * len_scale;
+            y_sum += vector._y * len_scale;
+            z_sum += vector._z * len_scale;
         }
         return Vec3.init(x_sum, y_sum, z_sum);
     }
@@ -118,10 +118,10 @@ pub const Vec3 = struct {
     /// coordinate is between min and max.
     pub inline fn random_vector(random: *Random, min: f32, max: f32) Vec3 {
         var r = DefaultPrng.init(0).random;
-        const x = random.float(f32) * 2.0 - 1.0;
-        const y = random.float(f32) * 2.0 - 1.0;
-        const z = random.float(f32) * 2.0 - 1.0;
-        return Vec3.init(x, y, z);
+        const x_val = random.float(f32) * 2.0 - 1.0;
+        const y_val = random.float(f32) * 2.0 - 1.0;
+        const z_val = random.float(f32) * 2.0 - 1.0;
+        return Vec3.init(x_val, y_val, z_val);
     }
 
     /// Generate random vector that is inside a unit sphere.
@@ -142,7 +142,7 @@ pub const Vec3 = struct {
         while (true) {
             const p = random_vector_in_unit_sphere(random);
             const unit_p = Vec3.unit_vector(p);
-            if (math.isNan(unit_p.x)) {
+            if (math.isNan(unit_p._x)) {
                 // zero length vector is skipped
                 continue;
             }
@@ -168,9 +168,9 @@ test "Vec3.dot" {
 test "Vec3.unit_vector() with zero length vector" {
     const vec_0 = Vec3.init(0.0, 0.0, 0.0);
     const zero_unit = vec_0.unit_vector();
-    expect(math.isNan(zero_unit.x));
-    expect(math.isNan(zero_unit.unit_vector().y));
-    expect(math.isNan(zero_unit.unit_vector().z));
+    expect(math.isNan(zero_unit.x()));
+    expect(math.isNan(zero_unit.y()));
+    expect(math.isNan(zero_unit.z()));
 }
 
 test "Vec3.unit_vector() with non-zero length vector" {
@@ -187,9 +187,9 @@ test "Vec3.center with zero vectors" {
     defer list.deinit();
 
     const center_vector = Vec3.center(list);
-    expectEqual(@as(f32, 0.0), center_vector.x);
-    expectEqual(@as(f32, 0.0), center_vector.y);
-    expectEqual(@as(f32, 0.0), center_vector.z);
+    expectEqual(@as(f32, 0.0), center_vector.x());
+    expectEqual(@as(f32, 0.0), center_vector.y());
+    expectEqual(@as(f32, 0.0), center_vector.z());
 }
 
 test "Vec3.center() with one vectors" {
@@ -200,9 +200,9 @@ test "Vec3.center() with one vectors" {
     const vec1 = Vec3.init(1.0, 2.0, 4.0);
     try list.append(vec1);
     const center_vector = Vec3.center(list);
-    expectEqual(@as(f32, 1.0), center_vector.x);
-    expectEqual(@as(f32, 2.0), center_vector.y);
-    expectEqual(@as(f32, 4.0), center_vector.z);
+    expectEqual(@as(f32, 1.0), center_vector.x());
+    expectEqual(@as(f32, 2.0), center_vector.y());
+    expectEqual(@as(f32, 4.0), center_vector.z());
 }
 
 test "Vec3.center() with three vectors" {
@@ -217,9 +217,9 @@ test "Vec3.center() with three vectors" {
     try list.append(vec2);
     try list.append(vec3);
     const center_vector = Vec3.center(list);
-    expectEqual(@as(f32, -1.0), center_vector.x);
-    expectEqual(@as(f32, 2.0), center_vector.y);
-    expectEqual(@as(f32, -4.0), center_vector.z);
+    expectEqual(@as(f32, -1.0), center_vector.x());
+    expectEqual(@as(f32, 2.0), center_vector.y());
+    expectEqual(@as(f32, -4.0), center_vector.z());
 }
 
 test "random_vector()" {
@@ -228,9 +228,9 @@ test "random_vector()" {
     const vector = Vec3.random_vector(random, -1.0, 1.0);
 
     const expected = Vec3.init(-0.7746, 0.3873, -0.7065);
-    expect(math.absFloat(expected.x - vector.x) < 0.01);
-    expect(math.absFloat(expected.y - vector.y) < 0.01);
-    expect(math.absFloat(expected.z - vector.z) < 0.01);
+    expect(math.absFloat(expected.x() - vector.x()) < 0.01);
+    expect(math.absFloat(expected.y() - vector.y()) < 0.01);
+    expect(math.absFloat(expected.z() - vector.z()) < 0.01);
     // length may or may not be larger than 1, now
     // it happens to be
     expect(Vec3.length(vector) > 1.0);
@@ -242,9 +242,9 @@ test "random_in_unit_sphere" {
     const vector = Vec3.random_vector_in_unit_sphere(random);
 
     const expected = Vec3.init(0.1846, 0.8305, -0.0479);
-    expect(math.absFloat(expected.x - vector.x) < 0.01);
-    expect(math.absFloat(expected.y - vector.y) < 0.01);
-    expect(math.absFloat(expected.z - vector.z) < 0.01);
+    expect(math.absFloat(expected.x() - vector.x()) < 0.01);
+    expect(math.absFloat(expected.y() - vector.y()) < 0.01);
+    expect(math.absFloat(expected.z() - vector.z()) < 0.01);
     expect(Vec3.length(vector) < 1.0);
 }
 
@@ -253,9 +253,9 @@ test "random_unit_vector" {
     const random = &prng.random;
     const vector = Vec3.random_unit_vector(random);
     const expected = Vec3.init(0.2167, 0.9746, -0.0562);
-    expect(math.absFloat(expected.x - vector.x) < 0.01);
-    expect(math.absFloat(expected.y - vector.y) < 0.01);
-    expect(math.absFloat(expected.z - vector.z) < 0.01);
+    expect(math.absFloat(expected.x() - vector.x()) < 0.01);
+    expect(math.absFloat(expected.y() - vector.y()) < 0.01);
+    expect(math.absFloat(expected.z() - vector.z()) < 0.01);
     expect(Vec3.length(vector) < 1.01);
     expect(Vec3.length(vector) > 0.99);
 }
