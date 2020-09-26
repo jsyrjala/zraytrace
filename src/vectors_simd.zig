@@ -57,91 +57,111 @@ pub fn center(vectors: ArrayList(Vec3)) Vec3 {
     return newVec3(x_sum, y_sum, z_sum);
 }
 
-// testing
+///// Testing
 const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
+const DefaultPrng = std.rand.DefaultPrng;
 
-test "new" {
-    expect(meta.eql(Vec3{1.0, 2.0, -3.1}, newVec3(1.0, 2.0, -3.1)));
+test "Vec3.dot" {
+    const vec_0 = Vec3.init(0.0, 0.0, 0.0);
+    const vec_unit_x = Vec3.init(1.0, 0.0, 0.0);
+    const vec_unit_y = Vec3.init(0.0, 1.0, 0.0);
+    expectEqual(@as(Vec3Float, 0.0), vec_0.dot(vec_unit_x));
+    expectEqual(@as(Vec3Float, 0.0), vec_unit_x.dot(vec_unit_y));
+    expectEqual(@as(Vec3Float, 1.0), vec_unit_x.dot(vec_unit_x));
 }
 
-test "+" {
-    const vec1 = newVec3(1.0, 2.0, 3.0);
-    const vec2 = newVec3(3.0, 1.0, 99.0);
-    const sum = vec1 + vec2;
-    expect(meta.eql(Vec3{4.0, 3.0, 102.0}, sum));
+test "Vec3.unit_vector() with zero length vector" {
+    const vec_0 = Vec3.init(0.0, 0.0, 0.0);
+    const zero_unit = vec_0.unit_vector();
+    expect(math.isNan(zero_unit.x()));
+    expect(math.isNan(zero_unit.y()));
+    expect(math.isNan(zero_unit.z()));
 }
 
-test "dot" {
-    const vec1 = newVec3(1.0, 2.0, 3.0);
-    const vec2 = newVec3(3.0, 1.0, 4.0);
-    expectEqual(@as(f32, 17.0), dot(vec1, vec2));
+test "Vec3.unit_vector() with non-zero length vector" {
+    const vec_1 = Vec3.init(1.0, 0.0, 0.0);
+    const vec_2 = Vec3.init(3.0, -4.0, 0.0);
+    expectEqual(vec_1, vec_1.unit_vector());
+    expectEqual(Vec3.init(0.6, -0.8, 0.0), vec_2.unit_vector());
 }
 
-test "cross" {
-    const vec1 = newVec3(1.0, 0.0, 0.0);
-    const vec2 = newVec3(0.0, 1.0, 0.0);
-    const vec3 = newVec3(0.0, -1.0, 0.0);
 
-    const expected1 = newVec3(0.0, 0.0, 1.0);
-    expectEqual(expected1, cross(vec1, vec2));
-
-    const expected2 = newVec3(0.0, 0.0, -1.0);
-    expectEqual(expected2, cross(vec1, vec3));
-}
-
-test "length_squared()" {
-    const vec1 = newVec3(2.0, 0., 0.);
-    expectEqual(@as(f32, 4.0), length_squared(vec1));
-}
-
-test "length()" {
-    const vec1 = newVec3(3.0, 4., 0.);
-    expectEqual(@as(f32, 5.0), length(vec1));
-}
-
-test "unit_vector() with zero vector" {
-    const vec_0 = newVec3(0., 0., 0.);
-    const zero_unit = unit_vector(vec_0);
-
-    expect(math.isNan(zero_unit[0]));
-    expect(math.isNan(zero_unit[1]));
-    expect(math.isNan(zero_unit[2]));
-}
-
-test "unit_vector() with non-zero vector" {
-    const vec = newVec3(4., -3., 0.);
-    const unit = unit_vector(vec);
-    const expected = newVec3(0.8, -0.6, 0.0);
-    expectEqual(expected, unit);
-}
-
-test "negate()" {
-    const vec = newVec3(4., -3., 0.1);
-    const negated = -vec;
-    const expected = newVec3(-4., 3., -0.1);
-    expectEqual(expected, negated);
-    expectEqual(expected, negate(vec));
-}
-
-test "center() with no vectors" {
+test "Vec3.center with zero vectors" {
     const allocator = std.heap.page_allocator;
     var list = ArrayList(Vec3).init(allocator);
     defer list.deinit();
-    const center_vector = center(list);
-    expectEqual(newVec3(0., 0., 0.), center_vector);
+
+    const center_vector = Vec3.center(list);
+    expectEqual(@as(Vec3Float, 0.0), center_vector.x());
+    expectEqual(@as(Vec3Float, 0.0), center_vector.y());
+    expectEqual(@as(Vec3Float, 0.0), center_vector.z());
 }
 
-test "center() with three vectors" {
+test "Vec3.center() with one vectors" {
     const allocator = std.heap.page_allocator;
     var list = ArrayList(Vec3).init(allocator);
     defer list.deinit();
-    const vec1 = newVec3(1.0, 2.0, 4.0);
-    const vec2 = newVec3(-1.0, -2.0, -4.0);
-    const vec3 = newVec3(-3.0, 6.0, -12.0);
+
+    const vec1 = Vec3.init(1.0, 2.0, 4.0);
+    try list.append(vec1);
+    const center_vector = Vec3.center(list);
+    expectEqual(@as(Vec3Float, 1.0), center_vector.x());
+    expectEqual(@as(Vec3Float, 2.0), center_vector.y());
+    expectEqual(@as(Vec3Float, 4.0), center_vector.z());
+}
+
+test "Vec3.center() with three vectors" {
+    const allocator = std.heap.page_allocator;
+    var list = ArrayList(Vec3).init(allocator);
+    defer list.deinit();
+
+    const vec1 = Vec3.init(1.0, 2.0, 4.0);
+    const vec2 = Vec3.init(-1.0, -2.0, -4.0);
+    const vec3 = Vec3.init(-3.0, 6.0, -12.0);
     try list.append(vec1);
     try list.append(vec2);
     try list.append(vec3);
-    const center_vector = center(list);
-    expectEqual(newVec3(-1., 2., -4.), center_vector);
+    const center_vector = Vec3.center(list);
+    expectEqual(@as(Vec3Float, -1.0), center_vector.x());
+    expectEqual(@as(Vec3Float, 2.0), center_vector.y());
+    expectEqual(@as(Vec3Float, -4.0), center_vector.z());
+}
+
+test "random_vector()" {
+    var prng = DefaultPrng.init(0);
+    const random = &prng.random;
+    const vector = Vec3.random_vector(random, -1.0, 1.0);
+
+    const expected = Vec3.init(-0.7746, 0.3873, -0.7065);
+    expect(math.absFloat(expected.x() - vector.x()) < 0.01);
+    expect(math.absFloat(expected.y() - vector.y()) < 0.01);
+    expect(math.absFloat(expected.z() - vector.z()) < 0.01);
+    // length may or may not be larger than 1, now
+    // it happens to be
+    expect(Vec3.length(vector) > 1.0);
+}
+
+test "random_in_unit_sphere" {
+    var prng = DefaultPrng.init(0);
+    const random = &prng.random;
+    const vector = Vec3.random_vector_in_unit_sphere(random);
+
+    const expected = Vec3.init(0.1846, 0.8305, -0.0479);
+    expect(math.absFloat(expected.x() - vector.x()) < 0.01);
+    expect(math.absFloat(expected.y() - vector.y()) < 0.01);
+    expect(math.absFloat(expected.z() - vector.z()) < 0.01);
+    expect(Vec3.length(vector) < 1.0);
+}
+
+test "random_unit_vector" {
+    var prng = DefaultPrng.init(0);
+    const random = &prng.random;
+    const vector = Vec3.random_unit_vector(random);
+    const expected = Vec3.init(0.2167, 0.9746, -0.0562);
+    expect(math.absFloat(expected.x() - vector.x()) < 0.01);
+    expect(math.absFloat(expected.y() - vector.y()) < 0.01);
+    expect(math.absFloat(expected.z() - vector.z()) < 0.01);
+    expect(Vec3.length(vector) < 1.01);
+    expect(Vec3.length(vector) > 0.99);
 }
