@@ -7,9 +7,11 @@ const Image = @import("image.zig").Image;
 const Allocator = std.mem.Allocator;
 const BaseFloat = base.BaseFloat;
 
-fn limit_color(value: f32, max_color: u32) u32 {
-    const v = @floatToInt(u32, 255.999 * value * @intToFloat(f32, max_color));
-    return math.clamp(v, 0, max_color);
+/// Convert from 0.0-1.0 float to 0-255 integer
+fn convert_value(value: f32) u32 {
+    const v = @floatToInt(u32, value * 255.999);
+    const x = math.clamp(v, @as(u32, 0), @as(u32, 255));
+    return x;
 }
 
 fn write_image_data(filename: []const u8, file: std.fs.File, image: *Image) ! u32 {
@@ -32,9 +34,9 @@ fn write_image_data(filename: []const u8, file: std.fs.File, image: *Image) ! u3
         while (x < image.height) : (x += 1) {
             const pixel = image.pixels[y * image.width + x];
             try writer.print("{d: >3} {d: >3} {d: >3}  ",
-                            .{limit_color(pixel.r, max_color),
-                                limit_color(pixel.g, max_color),
-                                limit_color(pixel.b, max_color)});
+                            .{convert_value(pixel.r),
+                                convert_value(pixel.g),
+                                convert_value(pixel.b)});
         }
         try writer.print("\n", .{});
     }
