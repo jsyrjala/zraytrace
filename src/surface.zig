@@ -4,6 +4,7 @@ const Color = @import("image.zig").Color;
 const Vec3 = @import("vector.zig").Vec3;
 const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
+const Material = @import("material.zig").Material;
 
 pub const Surface = union (enum) {
     sphere: Sphere,
@@ -40,20 +41,16 @@ pub const Surface = union (enum) {
 //// Testing
 const ArrayList = @import("std").ArrayList;
 const std = @import("std");
-const Material = @import("material.zig").Material;
-const Metal = @import("material.zig").Metal;
 
 test "Surface.hit()" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = &arena.allocator;
 
-    const metal = Metal.init(Color.silver);
-    const material = Material.init_metal(metal);
-    const sphere = Sphere.init(Vec3.z_unit, 0.1, material);
-    const s = Surface{.sphere = sphere};
-    const triangle = Triangle.init(Vec3.x_unit, Vec3.z_unit, Vec3.y_unit, material);
-    const t = Surface{.triangle = triangle};
+    const sphere = Sphere.init(Vec3.z_unit, 0.1, Material.black_metal);
+    const s = Surface.init_sphere(sphere);
+    const triangle = Triangle.init(Vec3.x_unit, Vec3.z_unit, Vec3.y_unit, Material.black_metal);
+    const t = Surface.init_triangle(triangle);
     const ray = Ray.init(Vec3.origin, Vec3.x_unit);
 
     var surfaces = ArrayList(Surface).init(allocator);

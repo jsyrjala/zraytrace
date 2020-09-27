@@ -34,15 +34,11 @@ pub const HitRecord = struct {
 
 //// Testing
 const Sphere = @import("sphere.zig").Sphere;
-const Metal = @import("material.zig").Metal;
-const Color = @import("image.zig").Color;
 
 test "HitRecord.init" {
     const vec = Vec3.init(1.0, 1.0, 1.0);
     const ray = Ray.init(vec, vec);
-    const metal = Metal.init(Color.black);
-    const material = Material.init_metal(metal);
-    const sphere = Sphere.init(vec, 1.0, material);
+    const sphere = Sphere.init(vec, 1.0, Material.black_metal);
     const surface = Surface.init_sphere(sphere);
     const hit_record = HitRecord.init(ray, vec, vec, 1.0, surface);
 }
