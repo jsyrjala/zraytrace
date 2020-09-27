@@ -33,7 +33,7 @@ pub const Image = struct {
 
     pub fn deinit(image: *const Image) void {
         image.allocator.free(image.pixels);
-        image.allocator.free(image);
+        image.allocator.destroy(image);
     }
 };
 
