@@ -16,6 +16,11 @@ pub const Vec3 = struct {
     _y: BaseFloat,
     _z: BaseFloat,
 
+    pub const origin = Vec3.init(0., 0., 0.);
+    pub const x_unit = Vec3.init(1., 0., 0.);
+    pub const y_unit = Vec3.init(0., 1., 0.);
+    pub const z_unit = Vec3.init(0., 0., 1.);
+
     pub inline fn x(v: Vec3) BaseFloat {
         return v._x;
     }
