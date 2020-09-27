@@ -7,8 +7,8 @@ const Image = @import("image.zig").Image;
 const Allocator = std.mem.Allocator;
 const BaseFloat = base.BaseFloat;
 
-fn limit_color(value: f32, max_color: i32) i32 {
-    const v = @floatToInt(i32, 255.999 * value * @intToFloat(f32, max_color));
+fn limit_color(value: f32, max_color: u32) u32 {
+    const v = @floatToInt(u32, 255.999 * value * @intToFloat(f32, max_color));
     return math.clamp(v, 0, max_color);
 }
 
@@ -31,9 +31,10 @@ fn write_image_data(filename: []const u8, file: std.fs.File, image: *Image) ! u3
         var x: usize = 0;
         while (x < image.height) : (x += 1) {
             const pixel = image.pixels[y * image.width + x];
-            try writer.print("{} {} {}  ", .{limit_color(pixel.r, max_color),
-                                            limit_color(pixel.g, max_color),
-                                            limit_color(pixel.b, max_color)});
+            try writer.print("{d: >3} {d: >3} {d: >3}  ",
+                            .{limit_color(pixel.r, max_color),
+                                limit_color(pixel.g, max_color),
+                                limit_color(pixel.b, max_color)});
         }
         try writer.print("\n", .{});
     }
@@ -64,5 +65,5 @@ test "write PPM image" {
 
     const file = try std.fs.cwd().openFile(filename, .{.read = true});
     const stat = try file.stat();
-    expectEqual(@as(u64, 846), stat.size);
+    expectEqual(@as(u64, 1446), stat.size);
 }
