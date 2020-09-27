@@ -15,18 +15,19 @@ fn convert_value(value: f32) u32 {
 }
 
 fn write_image_data(filename: []const u8, file: std.fs.File, image: *Image) ! u32 {
+    // TODO writing is slow, this needs BufferedWriter etc.
     const writer = file.outStream();
     const max_color = 255;
-    try file.writeAll("P3\n");
+    try writer.print("P3\n", .{});
     try writer.print("# filename: {}\n", .{filename});
     // TODO there is also P6 (raw) format
     // TODO print date
-    try file.writeAll("# The P3 = colors are in ASCII\n");
-    try file.writeAll("# Image width and height\n");
+    try writer.print("# The P3 = colors are in ASCII\n", .{});
+    try writer.print("# Image width and height\n", .{});
     try writer.print("{} {}\n", .{image.width, image.height});
-    try file.writeAll("# Max color value\n");
+    try writer.print("# Max color value\n", .{});
     try writer.print("{}\n", .{max_color});
-    try file.writeAll("# RGB triplets\n");
+    try writer.print("# RGB triplets\n", .{});
 
     var y: usize = 0;
     while (y < image.height) : (y += 1) {
