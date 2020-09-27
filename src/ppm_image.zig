@@ -45,6 +45,9 @@ fn write_image_data(filename: []const u8, file: std.fs.File, image: *Image) ! u3
 
 pub fn write_file(filename: []const u8, image: *Image) anyerror! void {
     // TODO add .write = true to props?
+    std.debug.warn("Writing {} pixels to file {}\n",
+                    .{image.width * image.height, filename});
+
     const file = try std.fs.cwd().createFile(filename, .{});
     defer file.close();
 

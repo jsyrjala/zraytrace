@@ -12,15 +12,16 @@ const Color = img.Color;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Sphere = @import("sphere.zig").Sphere;
 const Camera = @import("camera.zig").Camera;
+const Metal = @import("material.zig").Metal;
 
 inline fn background_color(ray: Ray) Color {
     const unit_direction = ray.direction.unit_vector();
-    const t = 0.5*(unit_direction.y() + 1.0);
+    const t = 0.5 * (unit_direction.y() + 1.0);
     return Color.white.scale(1.0-t)
             .add(Color.init(0.5, 0.7, 1.0).scale(t));
 }
 
-inline fn ray_color(ray: Ray, objects: ArrayList(Sphere), depth: u32) Color {
+fn ray_color(ray: Ray, objects: ArrayList(Sphere), depth: u32) Color {
     if (depth <= 0) {
         return Color.black;
     }
@@ -28,19 +29,26 @@ inline fn ray_color(ray: Ray, objects: ArrayList(Sphere), depth: u32) Color {
     var t_max = math.inf(BaseFloat);
     var closest_hit: ?HitRecord = null;
     for (objects.items) |*sphere, index| {
-        const hit_record = sphere.hit(ray, t_min, t_max);
-        if (hit_record != null) {
-            closest_hit = hit_record.?;
+        const current_hit_record = sphere.hit(ray, t_min, t_max);
+        if (current_hit_record != null) {
+            closest_hit = current_hit_record.?;
             t_max = closest_hit.?.t;
         }
     }
     if (closest_hit == null) {
         return background_color(ray);
     }
-    // hitting sphere
-    // some random color based on hit location
-    const n = closest_hit.?.normal.unit_vector();
-    return Color.init(n.x() * 0.5 + 1.0, n.y() * 0.5 + 1.0, n.z() * 0.5 + 1.0);
+    const hit_record = closest_hit.?;
+    const hit_object = hit_record.object;
+    const material = hit_object.material;
+    const potential_scattering = material.scatter(ray, hit_record);
+    if (potential_scattering == null) {
+        // material fully absorbed the ray
+        return Color.black;
+    }
+    const scattering = potential_scattering.?;
+    // material reflected the ray
+    return scattering.attenuation.multiply(ray_color(scattering.scattered_ray, objects, depth - 1));
 }
 
 fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) void {
@@ -98,7 +106,7 @@ const expectEqual = std.testing.expectEqual;
 const ppm_image = @import("ppm_image.zig");
 
 test "Render something" {
-    const camera = Camera.init(Vec3.origin, Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = &arena.allocator;
@@ -108,13 +116,19 @@ test "Render something" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
 
-    try objects.append(Sphere.init(Vec3.z_unit.scale(6), 2.0));
-    try objects.append(Sphere.init(Vec3.init(1., 0.5, 4.0), 1.0));
-    try objects.append(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0));
+    const black_metal = Metal.init(Color.black);
+    const gold_metal = Metal.init(Color.gold);
 
-    const width = 100;
-    const height = 100;
-    const samples_per_pixel = 10;
+    const red_metal = Metal.init(Color.red);
+    const silver_metal = Metal.init(Color.silver);
+    // TODO this copies the materials with objects
+    try objects.append(Sphere.init(Vec3.z_unit.scale(6), 2.0, gold_metal));
+    try objects.append(Sphere.init(Vec3.init(1., 0.5, 4.0), 1.0, red_metal));
+    try objects.append(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, silver_metal));
+
+    const width = 500;
+    const height = 500;
+    const samples_per_pixel = 100;
     const max_depth = 10;
     const scene_image = try render(allocator, random, camera, objects,
                                 width, height, samples_per_pixel, max_depth);

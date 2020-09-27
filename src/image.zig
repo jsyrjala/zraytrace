@@ -11,6 +11,12 @@ pub const Color = struct {
 
     pub const black = init(0.0, 0.0, 0.0);
     pub const white = init(1.0, 1.0, 1.0);
+    pub const gold = init(1.0, 0.843, 0);
+    pub const silver = init(0.752, 0.752, 0.752);
+    pub const red = init(1.0, 0.0, 0.0);
+    pub const green = init(0.0, 1.0, 0.0);
+    pub const blue = init(0.0, 0.0, 1.0);
+
 
     pub inline fn init(r: f32, g: f32, b: f32) Color {
         return Color{.r = r, .g = g, .b = b};
@@ -22,6 +28,10 @@ pub const Color = struct {
 
     pub inline fn scale(color: Color, t: f32) Color {
         return Color.init(color.r * t, color.g * t, color.b * t);
+    }
+
+    pub inline fn multiply(color: Color, other: Color) Color {
+        return Color.init(color.r * other.r, color.g * other.g, color.b * other.b);
     }
 
     /// Add color elements. Immutable.
@@ -45,11 +55,11 @@ pub const Color = struct {
 
 pub const Image = struct {
     allocator: *Allocator,
-    width: u16,
-    height: u16,
+    width: u32,
+    height: u32,
     pixels: []Color,
 
-    pub fn init(allocator: *Allocator, width: u16, height: u16) ! *Image {
+    pub fn init(allocator: *Allocator, width: u32, height: u32) ! *Image {
         const pixels = try allocator.alloc(Color, width * height);
         for (pixels) |*pixel, index| {
             pixel.* = Color.new_black();
