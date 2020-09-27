@@ -15,7 +15,9 @@ const Material = @import("material.zig").Material;
 const Surface = @import("surface.zig").Surface;
 
 var recursion_depth_count: u64 = 0;
+var recursion_depth_count_prev: u64 = 0;
 var reflection_count: u64 = 0;
+var reflection_count_prev: u64 = 0;
 
 inline fn background_color(ray: Ray) Color {
     const unit_direction = ray.direction.unit_vector();
@@ -59,7 +61,10 @@ fn ray_color(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
 fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) void {
     std.debug.warn("Scanline: {}/{} Pixels: {} Recursion limit: {} Reflections: {}\n",
                    .{scanline, total_scanlines, pixels_processed,
-                   recursion_depth_count, reflection_count});
+                   (recursion_depth_count - recursion_depth_count_prev),
+                   (reflection_count - reflection_count_prev)});
+    recursion_depth_count_prev = recursion_depth_count;
+    reflection_count_prev = reflection_count;
 }
 
 // TODO print progress
