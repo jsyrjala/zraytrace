@@ -10,9 +10,12 @@ const img = @import("image.zig");
 const Image = img.Image;
 const Color = img.Color;
 const HitRecord = @import("hit_record.zig").HitRecord;
-const Sphere = @import("sphere.zig").Sphere;
 const Camera = @import("camera.zig").Camera;
-const Metal = @import("material.zig").Metal;
+const Material = @import("material.zig").Material;
+const Surface = @import("surface.zig").Surface;
+
+var recursion_depth_count: u64 = 0;
+var reflection_count: u64 = 0;
 
 inline fn background_color(ray: Ray) Color {
     const unit_direction = ray.direction.unit_vector();
@@ -21,15 +24,16 @@ inline fn background_color(ray: Ray) Color {
             .add(Color.init(0.5, 0.7, 1.0).scale(t));
 }
 
-fn ray_color(ray: Ray, objects: ArrayList(Sphere), depth: u32) Color {
+fn ray_color(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
     if (depth <= 0) {
+        recursion_depth_count += 1;
         return Color.black;
     }
     var t_min: BaseFloat = 0.001;
     var t_max = math.inf(BaseFloat);
     var closest_hit: ?HitRecord = null;
-    for (objects.items) |*sphere, index| {
-        const current_hit_record = sphere.hit(ray, t_min, t_max);
+    for (surfaces.items) |*surface, index| {
+        const current_hit_record = surface.hit(ray, t_min, t_max);
         if (current_hit_record != null) {
             closest_hit = current_hit_record.?;
             t_max = closest_hit.?.t;
@@ -39,30 +43,32 @@ fn ray_color(ray: Ray, objects: ArrayList(Sphere), depth: u32) Color {
         return background_color(ray);
     }
     const hit_record = closest_hit.?;
-    const hit_object = hit_record.object;
-    const material = hit_object.material;
+    const hit_surface = hit_record.surface;
+    const material = hit_surface.material();
     const potential_scattering = material.scatter(ray, hit_record);
     if (potential_scattering == null) {
         // material fully absorbed the ray
         return Color.black;
     }
+    reflection_count += 1;
     const scattering = potential_scattering.?;
     // material reflected the ray
-    return scattering.attenuation.multiply(ray_color(scattering.scattered_ray, objects, depth - 1));
+    return scattering.attenuation.multiply(ray_color(scattering.scattered_ray, surfaces, depth - 1));
 }
 
 fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) void {
-    std.debug.warn("Scanline: {}/{} Pixels: {}\n",
-                   .{scanline, total_scanlines, pixels_processed});
+    std.debug.warn("Scanline: {}/{} Pixels: {} Recursion limit: {} Reflections: {}\n",
+                   .{scanline, total_scanlines, pixels_processed,
+                   recursion_depth_count, reflection_count});
 }
 
 // TODO print progress
 pub fn render(allocator: *Allocator, random: *Random,
-                camera: Camera, objects: ArrayList(Sphere),
+                camera: Camera, surfaces: ArrayList(Surface),
                 width: u16, height: u16,
                 samples_per_pixel: u16, max_depth: u16) ! *Image {
     std.debug.warn("Raytrace start\n", .{});
-    // std.debug.warn(" - Objects: ", .{size(world.objects)[1])
+    std.debug.warn(" - Surfaces: {}\n", .{surfaces.items.len});
     std.debug.warn(" - Pixels: {}x{}\n", .{width, height});
     std.debug.warn(" - Samples per pixel: {}\n", .{samples_per_pixel});
     std.debug.warn(" - Recursion depth: {}\n", .{max_depth});
@@ -89,7 +95,7 @@ pub fn render(allocator: *Allocator, random: *Random,
                 const u = (@intToFloat(BaseFloat, x) + random.float(BaseFloat) - 0.5) / f_width;
                 const v = (f_y + random.float(BaseFloat) - 0.5) / f_height;
                 const ray = camera.get_ray(u, v);
-                const color = ray_color(ray, objects, max_depth);
+                const color = ray_color(ray, surfaces, max_depth);
                 color_acc.add_mutate(color);
             }
             const image_offset = y * width + x;
@@ -104,6 +110,9 @@ pub fn render(allocator: *Allocator, random: *Random,
 const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
 const ppm_image = @import("ppm_image.zig");
+const Metal = @import("material.zig").Metal;
+const Lambertian = @import("material.zig").Lambertian;
+const Sphere = @import("sphere.zig").Sphere;
 
 test "Render something" {
     const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
@@ -111,25 +120,33 @@ test "Render something" {
     defer arena.deinit();
     const allocator = &arena.allocator;
 
-    var objects = ArrayList(Sphere).init(allocator);
+    var objects = ArrayList(Surface).init(allocator);
     defer objects.deinit();
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
 
-    const black_metal = Metal.init(Color.black);
-    const gold_metal = Metal.init(Color.gold);
+    const black_metal = Material.init_metal(Metal.init(Color.black));
+    const gold_metal = Material.init_metal(Metal.init(Color.gold));
+    const red_metal = Material.init_metal(Metal.init(Color.red));
+    const green_metal = Material.init_metal(Metal.init(Color.green));
+    const blue_metal = Material.init_metal(Metal.init(Color.blue));
+    const white_metal = Material.init_metal(Metal.init(Color.white));
 
-    const red_metal = Metal.init(Color.red);
-    const silver_metal = Metal.init(Color.silver);
+
+    const silver_metal = Material.init_lambertian(Lambertian.init(random, Color.silver));
+
+    const green_matte = Material.init_lambertian(Lambertian.init(random, Color.green));
+    const purple_matte = Material.init_lambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
+
     // TODO this copies the materials with objects
-    try objects.append(Sphere.init(Vec3.z_unit.scale(6), 2.0, gold_metal));
-    try objects.append(Sphere.init(Vec3.init(1., 0.5, 4.0), 1.0, red_metal));
-    try objects.append(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, silver_metal));
+    try objects.append(Surface.init_sphere(Sphere.init(Vec3.z_unit.scale(6), 2.0, gold_metal)));
+    try objects.append(Surface.init_sphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, purple_matte)));
+    try objects.append(Surface.init_sphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, green_matte)));
 
-    const width = 500;
-    const height = 500;
-    const samples_per_pixel = 100;
-    const max_depth = 10;
+    const width = 400;
+    const height = 400;
+    const samples_per_pixel = 1000;
+    const max_depth = 30;
     const scene_image = try render(allocator, random, camera, objects,
                                 width, height, samples_per_pixel, max_depth);
     defer scene_image.deinit();

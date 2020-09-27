@@ -5,6 +5,9 @@ const vector = @import("vector.zig");
 const Vec3 = vector.Vec3;
 const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
+const Surface = @import("surface.zig").Surface;
+const Color = @import("image.zig").Color;
+const Material = @import("material.zig").Material;
 
 pub const Triangle = struct {
     // TODO use some generics trick
@@ -19,8 +22,9 @@ pub const Triangle = struct {
     face_normal: Vec3,
     /// Face normal in unit length
     face_unit_normal: Vec3,
+    material: Material,
 
-    pub fn init(a: Vec3, b: Vec3, c: Vec3) Triangle {
+    pub fn init(a: Vec3, b: Vec3, c: Vec3, material: Material) Triangle {
         const e1 = b.minus(a);
         const e2 = c.minus(a);
         const face_normal = e1.cross(e2);
@@ -28,12 +32,15 @@ pub const Triangle = struct {
         return Triangle{.a = a, .b=b, .c = c,
                         .face_normal = face_normal,
                         .face_unit_normal = face_unit_normal,
-                        .e1 = e1, .e2 = e2};
+                        .e1 = e1, .e2 = e2,
+                        .material = material};
     }
 
     /// Detect if a ray hits the triangle
     /// https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
-    pub fn hit(triangle:Triangle, ray:Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord{
+    pub fn hit(triangle: Triangle, surface: Surface, ray: Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord{
+        //std.debug.assert(&triangle == &surface.triangle);
+
         const a = triangle.a;
         const b = triangle.b;
         const c = triangle.c;
@@ -51,7 +58,7 @@ pub const Triangle = struct {
                         u >= 0.0 and v >= 0.0 and (u+v) <= 1.0;
         if (is_hit) {
             const location = ray.origin.plus(ray.direction.scale(t));
-            return HitRecord.init(ray, location, triangle.face_unit_normal, t);
+            return HitRecord.init(ray, location, triangle.face_unit_normal, t, surface);
         }
         return null;
     }
@@ -65,19 +72,18 @@ test "Triangle.init()" {
     const a = Vec3.init(1.0, 0.0, 0.0);
     const b = Vec3.init(0.0, 1.0, 0.0);
     const c = Vec3.init(0.0, 0.0, 1.0);
-    const triangle = Triangle.init(a, b, c);
+    const triangle = Triangle.init(a, b, c, Material.black_metal);
 }
 
 test "Triangle.hit() ray doesn't hit the triangle" {
     const a = Vec3.init(1.0, 0.0, 0.0);
     const b = Vec3.init(0.0, 1.0, 0.0);
     const c = Vec3.init(0.0, 0.0, 1.0);
-    const triangle = Triangle.init(a, b, c);
-
+    const triangle = Triangle.init(a, b, c, Material.black_metal);
+    const surface = Surface.init_triangle(triangle);
     const vec = Vec3.init(1.0, 1.0, 1.0);
     const ray = Ray.init(vec, vec);
-    // triange.hit_fn.* is deferenced pointer to hit function
-    const hit_record = triangle.hit(ray, 0.1, 10000.0);
+    const hit_record = triangle.hit(surface, ray, 0.1, 10000.0);
     if (hit_record != null ) {
         expect(false);
     }
@@ -87,12 +93,13 @@ test "Triangle.hit() ray hits the triangle" {
     const a = Vec3.init(10., 5., 1.0);
     const b = Vec3.init(-10.0, -10.0, 1.0);
     const c = Vec3.init(-10.0, 10.0, 1.0);
-    const triangle = Triangle.init(a, b, c);
+    const triangle = Triangle.init(a, b, c, Material.black_metal);
+    const surface = Surface.init_triangle(triangle);
 
     const origin = Vec3.init(0.0, 0.0, -10.0);
     const direction = Vec3.init(0.0, 0.0, 1.0);
     const ray = Ray.init(origin, direction);
-    const hit_record = triangle.hit(ray, 0.1, 10000.0);
+    const hit_record = triangle.hit(surface, ray, 0.1, 10000.0);
     if (hit_record == null) {
         expect(false);
     } else {
@@ -102,8 +109,4 @@ test "Triangle.hit() ray hits the triangle" {
         expectEqual(@as(BaseFloat, 11.0), hit.t);
         expectEqual(true, hit.front_face);
     }
-}
-
-fn LinkedList(comptime T: type) type {
-
 }

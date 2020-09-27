@@ -4,9 +4,8 @@ const BaseFloat = @import("base.zig").BaseFloat;
 const vector = @import("vector.zig");
 const Vec3 = vector.Vec3;
 const Ray = @import("ray.zig").Ray;
-const Color = @import("image.zig").Color;
-const Sphere = @import("sphere.zig").Sphere;
-const Metal = @import("material.zig").Metal;
+const Surface = @import("surface.zig").Surface;
+const Material = @import("material.zig").Material;
 
 pub const HitRecord = struct {
     /// Location of collision
@@ -18,25 +17,32 @@ pub const HitRecord = struct {
     /// True if ray hit front side of the surface
     front_face: bool,
     /// Pointer to object that collided
-    object: Sphere,
-    pub fn init(ray: Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, object: Sphere) HitRecord {
+    surface: Surface,
+    pub fn init(ray: Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: Surface) HitRecord {
         if (ray.direction.dot(outward_normal) > 0.0) {
             return HitRecord{.location = location,
                             .normal = outward_normal.negate(),
                             .t = t, .front_face = false,
-                            .object = object};
+                            .surface = surface};
         }
         return HitRecord{.location = location,
                             .normal = outward_normal,
                             .t = t, .front_face = true,
-                            .object = object};
+                            .surface = surface};
     }
 };
+
+//// Testing
+const Sphere = @import("sphere.zig").Sphere;
+const Metal = @import("material.zig").Metal;
+const Color = @import("image.zig").Color;
 
 test "HitRecord.init" {
     const vec = Vec3.init(1.0, 1.0, 1.0);
     const ray = Ray.init(vec, vec);
-    const material = Metal.init(Color.black);
-    const object = Sphere.init(vec, 1.0, material);
-    const hit_record = HitRecord.init(ray, vec, vec, 1.0, object);
+    const metal = Metal.init(Color.black);
+    const material = Material.init_metal(metal);
+    const sphere = Sphere.init(vec, 1.0, material);
+    const surface = Surface.init_sphere(sphere);
+    const hit_record = HitRecord.init(ray, vec, vec, 1.0, surface);
 }

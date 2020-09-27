@@ -5,20 +5,23 @@ const vector = @import("vector.zig");
 const Vec3 = vector.Vec3;
 const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
-const Metal = @import("material.zig").Metal;
+const Material = @import("material.zig").Material;
 const Color = @import("image.zig").Color;
- 
+const Surface = @import("surface.zig").Surface;
+
 pub const Sphere = struct {
     center: Vec3,
     radius: BaseFloat,
-    material: Metal,
+    material: Material,
 
-    pub fn init(center: Vec3, radius: BaseFloat, material: Metal) Sphere {
+    pub fn init(center: Vec3, radius: BaseFloat, material: Material) Sphere {
         return Sphere{.center = center, .radius = radius,
                     .material = material};
     }
 
-    pub fn hit(sphere:Sphere, ray:Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
+    pub fn hit(sphere:Sphere, surface:Surface, ray:Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
+        //std.debug.assert(&sphere == &surface.sphere);
+
         const oc = ray.origin.minus(sphere.center);
         const a = ray.direction.length_squared();
         const half_b = oc.dot(ray.direction);
@@ -32,14 +35,14 @@ pub const Sphere = struct {
             if (t1 < t_max and t1 > t_min) {
                 const location = ray.ray_at(t1);
                 const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-                return HitRecord.init(ray, location, outward_normal, t1, sphere);
+                return HitRecord.init(ray, location, outward_normal, t1, surface);
             }
             // this should happen only if ray starting point is inside of the sphere?
             const t2 = (-half_b + root) / a;
             if (t2 < t_max and t2 > t_min) {
                 const location = ray.ray_at(t2);
                 const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-                return HitRecord.init(ray, location, outward_normal, t2, sphere);
+                return HitRecord.init(ray, location, outward_normal, t2, surface);
             }
         }
         // the ray did not hit the sphere
@@ -52,10 +55,9 @@ const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
 
 test "Sphere.init" {
-    const material = Metal.init(Color.black);
     const vec = Vec3.init(1.0, 1.0, 1.0);
-    const sphere = Sphere.init(vec, 10.0, material);
-
+    const sphere = Sphere.init(vec, 10.0, Material.black_metal);
+    const surface = Surface.init_sphere(sphere);
     const ray = Ray.init(vec, vec);
-    const hit_record = sphere.hit(ray, 0.1, 10000.0);
+    const hit_record = sphere.hit(surface, ray, 0.1, 10000.0);
 }
