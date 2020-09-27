@@ -67,7 +67,6 @@ fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) vo
     reflection_count_prev = reflection_count;
 }
 
-// TODO print progress
 pub fn render(allocator: *Allocator, random: *Random,
                 camera: Camera, surfaces: ArrayList(Surface),
                 width: u16, height: u16,
@@ -148,10 +147,10 @@ test "Render something" {
     try objects.append(Surface.init_sphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, purple_matte)));
     try objects.append(Surface.init_sphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, green_matte)));
 
-    const width = 400;
-    const height = 400;
-    const samples_per_pixel = 1000;
-    const max_depth = 30;
+    const width = 20;
+    const height = 20;
+    const samples_per_pixel = 5;
+    const max_depth = 5;
     const scene_image = try render(allocator, random, camera, objects,
                                 width, height, samples_per_pixel, max_depth);
     defer scene_image.deinit();

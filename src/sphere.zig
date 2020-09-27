@@ -8,15 +8,20 @@ const HitRecord = @import("hit_record.zig").HitRecord;
 const Material = @import("material.zig").Material;
 const Color = @import("image.zig").Color;
 const Surface = @import("surface.zig").Surface;
+const AABB = @import("aabb.zig").AABB;
 
 pub const Sphere = struct {
     center: Vec3,
     radius: BaseFloat,
     material: Material,
+    /// Axis aligned bounding box
+    aabb: AABB,
 
     pub fn init(center: Vec3, radius: BaseFloat, material: Material) Sphere {
+        const aabb = AABB.init_min_max(center.minus(Vec3.init(radius, radius, radius)),
+                                        center.plus(Vec3.init(radius, radius, radius)));
         return Sphere{.center = center, .radius = radius,
-                    .material = material};
+                    .material = material, .aabb = aabb};
     }
 
     pub fn hit(sphere:Sphere, surface:Surface, ray:Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {

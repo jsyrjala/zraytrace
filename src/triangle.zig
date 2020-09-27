@@ -8,6 +8,7 @@ const HitRecord = @import("hit_record.zig").HitRecord;
 const Surface = @import("surface.zig").Surface;
 const Color = @import("image.zig").Color;
 const Material = @import("material.zig").Material;
+const AABB = @import("aabb.zig").AABB;
 
 pub const Triangle = struct {
     // TODO use some generics trick
@@ -23,8 +24,11 @@ pub const Triangle = struct {
     /// Face normal in unit length
     face_unit_normal: Vec3,
     material: Material,
+    /// Axis aligned bounding box
+    aabb: AABB,
 
     pub fn init(a: Vec3, b: Vec3, c: Vec3, material: Material) Triangle {
+        const aabb = AABB.init_aabb(AABB.init_min_max(a,b), AABB.init_min_max(a,c));
         const e1 = b.minus(a);
         const e2 = c.minus(a);
         const face_normal = e1.cross(e2);
@@ -33,7 +37,8 @@ pub const Triangle = struct {
                         .face_normal = face_normal,
                         .face_unit_normal = face_unit_normal,
                         .e1 = e1, .e2 = e2,
-                        .material = material};
+                        .material = material,
+                        .aabb = aabb};
     }
 
     /// Detect if a ray hits the triangle

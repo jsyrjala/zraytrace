@@ -24,13 +24,13 @@ pub const AABB = struct {
                         math.max(vec1.z(), vec2.z()));
     }
 
-    // Create AABB from two vertices
+    /// Create AABB from two vertices
     pub fn init_min_max(corner1: Vec3, corner2: Vec3) AABB {
         return AABB{.min = minimum_vec(corner1, corner2),
                     .max = maximum_vec(corner1, corner2)};
     }
 
-    // Create AABB from list of vertices
+    /// Create AABB from list of vertices
     pub fn init_vertexes(vertexes: ArrayList(Vec3)) AABB {
         // TODO what if there is 0 or 1 vertexes?
         std.debug.assert(vertexes.items.len > 1);
@@ -55,6 +55,7 @@ pub const AABB = struct {
                             Vec3.init(max_x, max_y, max_z));
     }
 
+    /// Combine two AABB boxes
     pub fn init_aabb(box1: AABB, box2: AABB) AABB {
         return AABB.init_min_max(minimum_vec(box1.min, box2.min),
                                     maximum_vec(box1.max, box2.max));
