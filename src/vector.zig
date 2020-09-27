@@ -33,7 +33,7 @@ pub const Vec3 = struct {
     }
 
     pub inline fn dot(self: Vec3, other: Vec3) BaseFloat {
-        return self._x * other._x + self._y * other._y + self._z * other._x;
+        return self._x * other._x + self._y * other._y + self._z * other._z;
     }
 
     pub inline fn cross(u:Vec3, v:Vec3) Vec3 {
@@ -158,13 +158,20 @@ const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
 const DefaultPrng = std.rand.DefaultPrng;
 
-test "Vec3.dot" {
+test "Vec3.dot()" {
     const vec_0 = Vec3.init(0.0, 0.0, 0.0);
     const vec_unit_x = Vec3.init(1.0, 0.0, 0.0);
     const vec_unit_y = Vec3.init(0.0, 1.0, 0.0);
+    const vec_unit_z = Vec3.init(0.0, 0.0, 1.0);
     expectEqual(@as(BaseFloat, 0.0), vec_0.dot(vec_unit_x));
+
     expectEqual(@as(BaseFloat, 0.0), vec_unit_x.dot(vec_unit_y));
+    expectEqual(@as(BaseFloat, 0.0), vec_unit_x.dot(vec_unit_z));
+    expectEqual(@as(BaseFloat, 0.0), vec_unit_y.dot(vec_unit_z));
+
     expectEqual(@as(BaseFloat, 1.0), vec_unit_x.dot(vec_unit_x));
+    expectEqual(@as(BaseFloat, 1.0), vec_unit_y.dot(vec_unit_y));
+    expectEqual(@as(BaseFloat, 1.0), vec_unit_z.dot(vec_unit_z));
 }
 
 test "Vec3.unit_vector() with zero length vector" {
