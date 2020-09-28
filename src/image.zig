@@ -1,3 +1,5 @@
+//! Byte array to store images and Color objects.
+//!
 const std = @import("std");
 const base = @import("base.zig");
 const BaseFloat = base.BaseFloat;

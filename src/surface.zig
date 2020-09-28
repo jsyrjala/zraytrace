@@ -6,6 +6,7 @@ const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Material = @import("material.zig").Material;
 
+/// Surface is a "supertype" for all surfaces.
 pub const Surface = union (enum) {
     sphere: Sphere,
     triangle: Triangle,

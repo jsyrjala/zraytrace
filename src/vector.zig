@@ -37,32 +37,37 @@ pub const Vec3 = struct {
         return Vec3{._x = _x, ._y = _y, ._z = _z};
     }
 
+    /// Dot product
     pub inline fn dot(self: Vec3, other: Vec3) BaseFloat {
         return self._x * other._x + self._y * other._y + self._z * other._z;
     }
 
+    /// Cross product
     pub inline fn cross(u:Vec3, v:Vec3) Vec3 {
         return Vec3.init(u._y * v._z - u._z * v._y,
                          u._z * v._x - u._x * v._z,
                          u._x * v._y - u._y * v._x);
     }
 
+    /// Vector length squared. Less computationally expensive than length().
     pub inline fn lengthSquared(self: Vec3) BaseFloat {
         return self._x * self._x + self._y * self._y + self._z * self._z;
     }
 
+    /// Vector length.
     pub inline fn length(self: Vec3) BaseFloat {
         return math.sqrt(self.lengthSquared());
     }
 
-    pub inline fn unitVector(self: Vec3) Vec3 {
+    /// Create an unit vector from v.
+    /// If v is zero length, returns a Vec3 full of NaNs.
+    pub inline fn unitVector(v: Vec3) Vec3 {
         // TODO divide by zero
-        const len = self.length();
-        return Vec3.init(self._x / len, self._y / len, self._z / len);
+        const len = v.length();
+        return Vec3.init(v._x / len, v._y / len, v._z / len);
     }
 
     pub inline fn negate(self: Vec3) Vec3 {
-        // uses stack
         return Vec3.init(-self._x, -self._y, -self._z);
     }
 
@@ -90,7 +95,8 @@ pub const Vec3 = struct {
         return Vec3.init(self._x * scalar, self._y * scalar, self._z * scalar);
     }
 
-    // Divide vector by scalar
+    /// Divide vector by scalar.
+    /// If scalar is 0, then result is Vec3 full of NaNs.
     pub inline fn divide(self: Vec3, scalar: BaseFloat) Vec3 {
         return Vec3.init(self._x / scalar, self._y / scalar, self._z / scalar);
     }
@@ -107,7 +113,7 @@ pub const Vec3 = struct {
         return new_vec3;
     }
 
-    /// Returns a center point for vectors
+    /// Returns a center point for a list of vectors
     pub fn center(vectors: ArrayList(Vec3)) Vec3 {
         const len_scale = 1.0 / @intToFloat(BaseFloat, vectors.items.len);
         var x_sum: BaseFloat = 0.0;
@@ -121,8 +127,7 @@ pub const Vec3 = struct {
         return Vec3.init(x_sum, y_sum, z_sum);
     }
 
-    /// Generate random vector where each
-    /// coordinate is between min and max.
+    /// Generate random vector where each coordinate is between min and max.
     pub inline fn random_vector(random: *Random, min: BaseFloat, max: BaseFloat) Vec3 {
         var r = DefaultPrng.init(0).random;
         const x_val = random.float(BaseFloat) * 2.0 - 1.0;
@@ -132,7 +137,7 @@ pub const Vec3 = struct {
     }
 
     /// Generate random vector that is inside a unit sphere.
-    /// Length is <= 1.0.
+    /// Uniformly distributed random vector whose length is <= 1.0.
     pub inline fn randomVectorInUnitSphere(random: *Random) Vec3 {
         while (true) {
             const p = Vec3.random_vector(random, -1.0, 1.0);
@@ -144,7 +149,7 @@ pub const Vec3 = struct {
         return unreachable;
     }
 
-    // Returns random unit vector
+    // Generate a random uniformly distributed unit vector.
     pub inline fn randomUnitVector(random: *Random) Vec3 {
         while (true) {
             const p = randomVectorInUnitSphere(random);

@@ -44,6 +44,7 @@ fn writeImageData(filename: []const u8, file: std.fs.File, image: *Image) ! u32 
     return 0;
 }
 
+/// Write Image to File using PPM format.
 pub fn writeFile(filename: []const u8, image: *Image) anyerror! void {
     // TODO add .write = true to props?
     std.debug.warn("Writing {} pixels to file {}\n",

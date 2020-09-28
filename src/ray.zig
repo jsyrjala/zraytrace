@@ -3,6 +3,7 @@ const vector = @import("vector.zig");
 const BaseFloat = base.BaseFloat;
 const Vec3 = vector.Vec3;
 
+/// Model a single ray
 pub const Ray = struct {
     origin: Vec3,
     direction: Vec3,

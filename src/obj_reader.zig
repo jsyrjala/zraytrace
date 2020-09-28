@@ -16,6 +16,7 @@ const FaceVertex = struct {
     vertex_normal: u64,
 };
 
+/// Parse face vertex to components: vertex, texture coordinate, vertex normal
 fn parseFaceVertex(line: []const u8) ! FaceVertex {
     // 1 2 3 4 => vertex indexes
     // 1/1 2/2 3/3 => vertex index/texture coordinate index
@@ -34,6 +35,7 @@ const ParseError = error {
     WrongNumberOfFaceVertexes,
 };
 
+/// Create triangle
 fn createTri(vertexes: *ArrayList(Vec3), material: *const Material,
              a_index: FaceVertex, b_index: FaceVertex, c_index: FaceVertex) Triangle {
     // indices in OJB file are 1-based
@@ -46,6 +48,8 @@ fn createTri(vertexes: *ArrayList(Vec3), material: *const Material,
     );
 }
 
+/// Parse triangles from a set of FaceVertexes.
+/// One face in OBJ may be parsed as several triangles.
 fn parseTriangles(allocator: *Allocator, material: *const Material,
                 vertexes: *ArrayList(Vec3), face_vertexes: *ArrayList(FaceVertex)) ! ArrayList(Triangle) {
     // Convert faces to triangles
@@ -95,8 +99,7 @@ fn parseTriangles(allocator: *Allocator, material: *const Material,
     }
 }
 
-// TODO share material objects between triangles (use pointer)
-// TODO add geometry for grouping bunch of surfaces
+/// ReadObj file to a List of surfaces
 pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const Material) !ArrayList(Surface) {
     std.debug.warn("Reading OBJ model from {}\n", .{filename});
 

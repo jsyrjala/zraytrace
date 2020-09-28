@@ -10,6 +10,7 @@ const Color = @import("image.zig").Color;
 const Surface = @import("surface.zig").Surface;
 const AABB = @import("aabb.zig").AABB;
 
+/// Sphere or a ball
 pub const Sphere = struct {
     center: Vec3,
     radius: BaseFloat,
@@ -25,8 +26,6 @@ pub const Sphere = struct {
     }
 
     pub fn hit(sphere:Sphere, surface:Surface, ray:Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
-        //std.debug.assert(&sphere == &surface.sphere);
-
         const oc = ray.origin.minus(sphere.center);
         const a = ray.direction.lengthSquared();
         const half_b = oc.dot(ray.direction);

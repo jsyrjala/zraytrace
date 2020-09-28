@@ -1,3 +1,4 @@
+//! Materials
 const std = @import("std");
 const Random = std.rand.Random;
 const Color = @import("image.zig").Color;
@@ -7,7 +8,7 @@ const Vec3 = vector.Vec3;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Surface = @import("surface.zig").Surface;
 
-
+/// Material is "supertype" for all material types
 pub const Material = union (enum) {
     /// Example materials
     pub const black_metal = initMetal(Metal.init(Color.black));
@@ -22,7 +23,7 @@ pub const Material = union (enum) {
     pub fn initLambertian(lambertian: Lambertian) Material {
         return Material{.lambertian = lambertian};
     }
-    /// Find the right surface type and call it's scatter method
+    /// Find the right material type and call it's scatter method
     pub inline fn scatter(material: Material, ray: Ray, hit_record: HitRecord) ?Scattering {
         const enum_fields = comptime std.meta.fields(@TagType(Material));
         inline for (std.meta.fields(Material)) |field, i| {

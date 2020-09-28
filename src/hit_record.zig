@@ -1,3 +1,6 @@
+//! HitRecord contains information about ray hitting
+//! a Surface.
+
 const std = @import("std");
 const math = std.math;
 const BaseFloat = @import("base.zig").BaseFloat;

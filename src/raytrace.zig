@@ -67,6 +67,7 @@ fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) vo
     reflection_count_prev = reflection_count;
 }
 
+/// Render a scene
 pub fn render(allocator: *Allocator, random: *Random,
                 camera: Camera, surfaces: ArrayList(Surface),
                 width: u16, height: u16,
