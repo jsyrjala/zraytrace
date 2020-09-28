@@ -28,11 +28,11 @@ pub const Triangle = struct {
     aabb: AABB,
 
     pub fn init(a: Vec3, b: Vec3, c: Vec3, material: Material) Triangle {
-        const aabb = AABB.init_aabb(AABB.init_min_max(a,b), AABB.init_min_max(a,c));
+        const aabb = AABB.initAabb(AABB.initMinMax(a,b), AABB.initMinMax(a,c));
         const e1 = b.minus(a);
         const e2 = c.minus(a);
         const face_normal = e1.cross(e2);
-        const face_unit_normal = face_normal.unit_vector();
+        const face_unit_normal = face_normal.unitVector();
         return Triangle{.a = a, .b=b, .c = c,
                         .face_normal = face_normal,
                         .face_unit_normal = face_unit_normal,
@@ -85,7 +85,7 @@ test "Triangle.hit() ray doesn't hit the triangle" {
     const b = Vec3.init(0.0, 1.0, 0.0);
     const c = Vec3.init(0.0, 0.0, 1.0);
     const triangle = Triangle.init(a, b, c, Material.black_metal);
-    const surface = Surface.init_triangle(triangle);
+    const surface = Surface.initTriangle(triangle);
     const vec = Vec3.init(1.0, 1.0, 1.0);
     const ray = Ray.init(vec, vec);
     const hit_record = triangle.hit(surface, ray, 0.1, 10000.0);
@@ -99,7 +99,7 @@ test "Triangle.hit() ray hits the triangle" {
     const b = Vec3.init(-10.0, -10.0, 1.0);
     const c = Vec3.init(-10.0, 10.0, 1.0);
     const triangle = Triangle.init(a, b, c, Material.black_metal);
-    const surface = Surface.init_triangle(triangle);
+    const surface = Surface.initTriangle(triangle);
 
     const origin = Vec3.init(0.0, 0.0, -10.0);
     const direction = Vec3.init(0.0, 0.0, 1.0);

@@ -47,15 +47,15 @@ pub const Vec3 = struct {
                          u._x * v._y - u._y * v._x);
     }
 
-    pub inline fn length_squared(self: Vec3) BaseFloat {
+    pub inline fn lengthSquared(self: Vec3) BaseFloat {
         return self._x * self._x + self._y * self._y + self._z * self._z;
     }
 
     pub inline fn length(self: Vec3) BaseFloat {
-        return math.sqrt(self.length_squared());
+        return math.sqrt(self.lengthSquared());
     }
 
-    pub inline fn unit_vector(self: Vec3) Vec3 {
+    pub inline fn unitVector(self: Vec3) Vec3 {
         // TODO divide by zero
         const len = self.length();
         return Vec3.init(self._x / len, self._y / len, self._z / len);
@@ -133,10 +133,10 @@ pub const Vec3 = struct {
 
     /// Generate random vector that is inside a unit sphere.
     /// Length is <= 1.0.
-    pub inline fn random_vector_in_unit_sphere(random: *Random) Vec3 {
+    pub inline fn randomVectorInUnitSphere(random: *Random) Vec3 {
         while (true) {
             const p = Vec3.random_vector(random, -1.0, 1.0);
-            if (Vec3.length_squared(p) > 1.0) {
+            if (Vec3.lengthSquared(p) > 1.0) {
                 continue;
             }
             return p;
@@ -145,10 +145,10 @@ pub const Vec3 = struct {
     }
 
     // Returns random unit vector
-    pub inline fn random_unit_vector(random: *Random) Vec3 {
+    pub inline fn randomUnitVector(random: *Random) Vec3 {
         while (true) {
-            const p = random_vector_in_unit_sphere(random);
-            const unit_p = Vec3.unit_vector(p);
+            const p = randomVectorInUnitSphere(random);
+            const unit_p = Vec3.unitVector(p);
             if (math.isNan(unit_p._x)) {
                 // zero length vector is skipped
                 continue;
@@ -179,19 +179,19 @@ test "Vec3.dot()" {
     expectEqual(@as(BaseFloat, 1.0), vec_unit_z.dot(vec_unit_z));
 }
 
-test "Vec3.unit_vector() with zero length vector" {
+test "Vec3.unitVector() with zero length vector" {
     const vec_0 = Vec3.init(0.0, 0.0, 0.0);
-    const zero_unit = vec_0.unit_vector();
+    const zero_unit = vec_0.unitVector();
     expect(math.isNan(zero_unit.x()));
     expect(math.isNan(zero_unit.y()));
     expect(math.isNan(zero_unit.z()));
 }
 
-test "Vec3.unit_vector() with non-zero length vector" {
+test "Vec3.unitVector() with non-zero length vector" {
     const vec_1 = Vec3.init(1.0, 0.0, 0.0);
     const vec_2 = Vec3.init(3.0, -4.0, 0.0);
-    expectEqual(vec_1, vec_1.unit_vector());
-    expectEqual(Vec3.init(0.6, -0.8, 0.0), vec_2.unit_vector());
+    expectEqual(vec_1, vec_1.unitVector());
+    expectEqual(Vec3.init(0.6, -0.8, 0.0), vec_2.unitVector());
 }
 
 
@@ -236,7 +236,7 @@ test "Vec3.center() with three vectors" {
     expectEqual(@as(BaseFloat, -4.0), center_vector.z());
 }
 
-test "random_vector()" {
+test "Vec3.random_vector()" {
     var prng = DefaultPrng.init(0);
     const random = &prng.random;
     const vector = Vec3.random_vector(random, -1.0, 1.0);
@@ -250,10 +250,10 @@ test "random_vector()" {
     expect(Vec3.length(vector) > 1.0);
 }
 
-test "random_in_unit_sphere" {
+test "Vec3.randomInUnitSphere()" {
     var prng = DefaultPrng.init(0);
     const random = &prng.random;
-    const vector = Vec3.random_vector_in_unit_sphere(random);
+    const vector = Vec3.randomVectorInUnitSphere(random);
 
     const expected = Vec3.init(0.1846, 0.8305, -0.0479);
     expect(math.absFloat(expected.x() - vector.x()) < 0.01);
@@ -262,10 +262,10 @@ test "random_in_unit_sphere" {
     expect(Vec3.length(vector) < 1.0);
 }
 
-test "random_unit_vector" {
+test "Vec3.randomUnitVector()" {
     var prng = DefaultPrng.init(0);
     const random = &prng.random;
-    const vector = Vec3.random_unit_vector(random);
+    const vector = Vec3.randomUnitVector(random);
     const expected = Vec3.init(0.2167, 0.9746, -0.0562);
     expect(math.absFloat(expected.x() - vector.x()) < 0.01);
     expect(math.absFloat(expected.y() - vector.y()) < 0.01);

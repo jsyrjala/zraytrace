@@ -18,19 +18,19 @@ pub const Sphere = struct {
     aabb: AABB,
 
     pub fn init(center: Vec3, radius: BaseFloat, material: Material) Sphere {
-        const aabb = AABB.init_min_max(center.minus(Vec3.init(radius, radius, radius)),
-                                        center.plus(Vec3.init(radius, radius, radius)));
+        const aabb = AABB.initMinMax(center.minus(Vec3.init(radius, radius, radius)),
+                                     center.plus(Vec3.init(radius, radius, radius)));
         return Sphere{.center = center, .radius = radius,
-                    .material = material, .aabb = aabb};
+                      .material = material, .aabb = aabb};
     }
 
     pub fn hit(sphere:Sphere, surface:Surface, ray:Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
         //std.debug.assert(&sphere == &surface.sphere);
 
         const oc = ray.origin.minus(sphere.center);
-        const a = ray.direction.length_squared();
+        const a = ray.direction.lengthSquared();
         const half_b = oc.dot(ray.direction);
-        const c = oc.length_squared() - (sphere.radius * sphere.radius);
+        const c = oc.lengthSquared() - (sphere.radius * sphere.radius);
         const discriminant = half_b*half_b - a*c;
 
         if (discriminant > 0) {
@@ -62,7 +62,7 @@ const expectEqual = std.testing.expectEqual;
 test "Sphere.init" {
     const vec = Vec3.init(1.0, 1.0, 1.0);
     const sphere = Sphere.init(vec, 10.0, Material.black_metal);
-    const surface = Surface.init_sphere(sphere);
+    const surface = Surface.initSphere(sphere);
     const ray = Ray.init(vec, vec);
     const hit_record = sphere.hit(surface, ray, 0.1, 10000.0);
 }

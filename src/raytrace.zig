@@ -19,14 +19,14 @@ var recursion_depth_count_prev: u64 = 0;
 var reflection_count: u64 = 0;
 var reflection_count_prev: u64 = 0;
 
-inline fn background_color(ray: Ray) Color {
-    const unit_direction = ray.direction.unit_vector();
+inline fn backgroundColor(ray: Ray) Color {
+    const unit_direction = ray.direction.unitVector();
     const t = 0.5 * (unit_direction.y() + 1.0);
     return Color.white.scale(1.0-t)
             .add(Color.init(0.5, 0.7, 1.0).scale(t));
 }
 
-fn ray_color(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
+fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
     if (depth <= 0) {
         recursion_depth_count += 1;
         return Color.black;
@@ -42,7 +42,7 @@ fn ray_color(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
         }
     }
     if (closest_hit == null) {
-        return background_color(ray);
+        return backgroundColor(ray);
     }
     const hit_record = closest_hit.?;
     const hit_surface = hit_record.surface;
@@ -55,7 +55,7 @@ fn ray_color(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
     reflection_count += 1;
     const scattering = potential_scattering.?;
     // material reflected the ray
-    return scattering.attenuation.multiply(ray_color(scattering.scattered_ray, surfaces, depth - 1));
+    return scattering.attenuation.multiply(rayColor(scattering.scattered_ray, surfaces, depth - 1));
 }
 
 fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) void {
@@ -82,7 +82,7 @@ pub fn render(allocator: *Allocator, random: *Random,
     const f_width = @intToFloat(BaseFloat, width);
     const f_height = @intToFloat(BaseFloat, height);
 
-    var color_acc = Color.new_black();
+    var color_acc = Color.newBlack();
     const color_scale = 1.0 / @intToFloat(f32, samples_per_pixel);
 
     var y: usize = 0;
@@ -91,16 +91,16 @@ pub fn render(allocator: *Allocator, random: *Random,
 
         var x: usize = 0;
         while (x < image.height) : (x += 1) {
-            color_acc.set_mutate(Color.new_black());
+            color_acc.setMutate(Color.newBlack());
             pixels_processed += 1;
             // TODO implement
             var sample: usize = 0;
             while (sample < samples_per_pixel) : (sample += 1) {
                 const u = (@intToFloat(BaseFloat, x) + random.float(BaseFloat) - 0.5) / f_width;
                 const v = (f_y + random.float(BaseFloat) - 0.5) / f_height;
-                const ray = camera.get_ray(u, v);
-                const color = ray_color(ray, surfaces, max_depth);
-                color_acc.add_mutate(color);
+                const ray = camera.getRay(u, v);
+                const color = rayColor(ray, surfaces, max_depth);
+                color_acc.addMutate(color);
             }
             const image_offset = y * width + x;
             image.pixels[image_offset] = color_acc.scale(color_scale);
@@ -129,23 +129,23 @@ test "Render something" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
 
-    const black_metal = Material.init_metal(Metal.init(Color.black));
-    const gold_metal = Material.init_metal(Metal.init(Color.gold));
-    const red_metal = Material.init_metal(Metal.init(Color.red));
-    const green_metal = Material.init_metal(Metal.init(Color.green));
-    const blue_metal = Material.init_metal(Metal.init(Color.blue));
-    const white_metal = Material.init_metal(Metal.init(Color.white));
+    const black_metal = Material.initMetal(Metal.init(Color.black));
+    const gold_metal = Material.initMetal(Metal.init(Color.gold));
+    const red_metal = Material.initMetal(Metal.init(Color.red));
+    const green_metal = Material.initMetal(Metal.init(Color.green));
+    const blue_metal = Material.initMetal(Metal.init(Color.blue));
+    const white_metal = Material.initMetal(Metal.init(Color.white));
 
 
-    const silver_metal = Material.init_lambertian(Lambertian.init(random, Color.silver));
+    const silver_metal = Material.initLambertian(Lambertian.init(random, Color.silver));
 
-    const green_matte = Material.init_lambertian(Lambertian.init(random, Color.green));
-    const purple_matte = Material.init_lambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
+    const green_matte = Material.initLambertian(Lambertian.init(random, Color.green));
+    const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
 
     // TODO this copies the materials with objects
-    try objects.append(Surface.init_sphere(Sphere.init(Vec3.z_unit.scale(6), 2.0, gold_metal)));
-    try objects.append(Surface.init_sphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, purple_matte)));
-    try objects.append(Surface.init_sphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, green_matte)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), 2.0, gold_metal)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, purple_matte)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, green_matte)));
 
     const width = 20;
     const height = 20;
@@ -154,5 +154,5 @@ test "Render something" {
     const scene_image = try render(allocator, random, camera, objects,
                                 width, height, samples_per_pixel, max_depth);
     defer scene_image.deinit();
-    const foo = ppm_image.write_file("./target/render_test.ppm", scene_image);
+    const foo = ppm_image.writeFile("./target/render_test.ppm", scene_image);
 }

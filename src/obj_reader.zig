@@ -153,7 +153,7 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
 
             const triangles = try parseTriangles(tmp_allocator, material, &vertexes, &face_vertexes);
             for (triangles.items) |triangle, i| {
-                try surfaces.append(Surface.init_triangle(triangle));
+                try surfaces.append(Surface.initTriangle(triangle));
             }
             face_count += 1;
         } else if (line[0] == 'v' and line[1] == 'n' and line[2] == ' ') {

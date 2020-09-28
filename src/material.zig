@@ -10,16 +10,16 @@ const Surface = @import("surface.zig").Surface;
 
 pub const Material = union (enum) {
     /// Example materials
-    pub const black_metal = init_metal(Metal.init(Color.black));
-    pub const silver_metal = init_metal(Metal.init(Color.silver));
+    pub const black_metal = initMetal(Metal.init(Color.black));
+    pub const silver_metal = initMetal(Metal.init(Color.silver));
 
     lambertian: Lambertian,
     metal: Metal,
 
-    pub fn init_metal(metal: Metal) Material {
+    pub fn initMetal(metal: Metal) Material {
         return Material{.metal = metal};
     }
-    pub fn init_lambertian(lambertian: Lambertian) Material {
+    pub fn initLambertian(lambertian: Lambertian) Material {
         return Material{.lambertian = lambertian};
     }
     /// Find the right surface type and call it's scatter method
@@ -53,7 +53,7 @@ pub const Lambertian = struct {
 
     pub inline fn scatter(material: Lambertian, ray: Ray, hit_record: HitRecord) ?Scattering {
         const scatter_direction = hit_record.normal
-                                    .plus(Vec3.random_unit_vector(material.random));
+                                    .plus(Vec3.randomUnitVector(material.random));
         const scattered = Ray.init(hit_record.location, scatter_direction);
         return Scattering.init(scattered, material.albedo);
     }
@@ -67,7 +67,7 @@ pub const Metal = struct {
     }
 
     pub inline fn scatter(material: Metal, ray: Ray, hit_record: HitRecord) ?Scattering {
-        const reflected = ray.direction.unit_vector().reflect(hit_record.normal);
+        const reflected = ray.direction.unitVector().reflect(hit_record.normal);
         const scattered = Ray.init(hit_record.location, reflected);
         const produce_ray = scattered.direction.dot(hit_record.normal) > 0;
         if (produce_ray) {
@@ -84,9 +84,9 @@ const Sphere = @import("sphere.zig").Sphere;
 
 test "Material.scatter()" {
     const metal = Metal.init(Color.black);
-    const material = Material.init_metal(metal);
+    const material = Material.initMetal(metal);
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
-    const surface = Surface.init_sphere(Sphere.init(Vec3.z_unit, 10.0, material));
+    const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
     const hit = HitRecord.init(ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, surface);
     const scattering = material.scatter(ray, hit);
@@ -102,8 +102,8 @@ test "Lambertian.scatter()" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
     const lambertian = Lambertian.init(random, Color.black);
-    const material = Material.init_lambertian(lambertian);
-    const surface = Surface.init_sphere(Sphere.init(Vec3.z_unit, 10.0, material));
+    const material = Material.initLambertian(lambertian);
+    const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
     const hit = HitRecord.init(ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, surface);
@@ -116,9 +116,9 @@ test "Metal.init()" {
 
 test "Metal.scatter()" {
     const metal = Metal.init(Color.black);
-    const material = Material.init_metal(metal);
+    const material = Material.initMetal(metal);
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
-    const surface = Surface.init_sphere(Sphere.init(Vec3.z_unit, 10.0, material));
+    const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
     const hit = HitRecord.init(ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, surface);
     const scattering = material.scatter(ray, hit);

@@ -22,7 +22,7 @@ pub const Color = struct {
         return Color{.r = r, .g = g, .b = b};
     }
 
-    pub inline fn new_black() Color {
+    pub inline fn newBlack() Color {
         return init(0.0, 0.0, 0.0);
     }
 
@@ -42,13 +42,13 @@ pub const Color = struct {
     }
 
     /// Add color elements. Mutable.
-    pub inline fn add_mutate(color: * Color, add_color: Color) void {
+    pub inline fn addMutate(color: * Color, add_color: Color) void {
         color.r += add_color.r;
         color.g += add_color.g;
         color.b += add_color.b;
     }
 
-    pub inline fn set_mutate(color: * Color, set_color: Color) void {
+    pub inline fn setMutate(color: * Color, set_color: Color) void {
         color.* = set_color;
     }
 };
@@ -62,7 +62,7 @@ pub const Image = struct {
     pub fn init(allocator: *Allocator, width: u32, height: u32) ! *Image {
         const pixels = try allocator.alloc(Color, width * height);
         for (pixels) |*pixel, index| {
-            pixel.* = Color.new_black();
+            pixel.* = Color.newBlack();
         }
         const image = try allocator.create(Image);
         image.* = Image{.allocator = allocator,
@@ -91,15 +91,15 @@ test "Image" {
     defer image.deinit();
 
     const color = image.pixels[1];
-    expectEqual(Color.new_black(), image.pixels[0]);
-    expectEqual(Color.new_black(), image.pixels[63999]);
+    expectEqual(Color.newBlack(), image.pixels[0]);
+    expectEqual(Color.newBlack(), image.pixels[63999]);
     expectEqual(@as(usize, 64000), image.pixels.len);
 }
 
 test "Color.add()" {
     const color1 = Color.init(0.1, 0.2, 0.6);
     const color2 = Color.init(0.1, 0.2, 0.6);
-    const black = Color.new_black();
+    const black = Color.newBlack();
     const new_color1 = color2.add(black);
     expectEqual(color1, new_color1);
     const new_color2 = color2.add(color2);
@@ -107,19 +107,19 @@ test "Color.add()" {
     expectEqual(expected, new_color2);
 }
 
-test "Color.add_mutate()" {
+test "Color.addMutate()" {
     const color1 = Color.init(1., 2., 6.);
     const gray = Color.init(1., 1., 1.);
     var color2 = Color.init(1., 2., 6.);
-    const black = Color.new_black();
+    const black = Color.newBlack();
 
-    Color.add_mutate(&color2, black);
+    Color.addMutate(&color2, black);
     expectEqual(color1, color2);
 
-    Color.add_mutate(&color2, gray);
+    Color.addMutate(&color2, gray);
     expectEqual(Color.init(2., 3., 7.), color2);
 
     // zig automatically takes a pointer to color2
-    color2.add_mutate(color1);
+    color2.addMutate(color1);
     expectEqual(Color.init(3., 5., 13.), color2);
 }

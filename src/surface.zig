@@ -10,10 +10,10 @@ pub const Surface = union (enum) {
     sphere: Sphere,
     triangle: Triangle,
 
-    pub fn init_sphere(sphere: Sphere) Surface {
+    pub fn initSphere(sphere: Sphere) Surface {
         return Surface{.sphere = sphere};
     }
-    pub fn init_triangle(triangle: Triangle) Surface {
+    pub fn initTriangle(triangle: Triangle) Surface {
         return Surface{.triangle = triangle};
     }
     /// Find the right surface type and call it's hit method
@@ -48,9 +48,9 @@ test "Surface.hit()" {
     const allocator = &arena.allocator;
 
     const sphere = Sphere.init(Vec3.z_unit, 0.1, Material.black_metal);
-    const s = Surface.init_sphere(sphere);
+    const s = Surface.initSphere(sphere);
     const triangle = Triangle.init(Vec3.x_unit, Vec3.z_unit, Vec3.y_unit, Material.black_metal);
-    const t = Surface.init_triangle(triangle);
+    const t = Surface.initTriangle(triangle);
     const ray = Ray.init(Vec3.origin, Vec3.x_unit);
 
     var surfaces = ArrayList(Surface).init(allocator);

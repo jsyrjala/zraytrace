@@ -20,8 +20,8 @@ pub const Camera = struct {
         const h = math.tan(theta / 2.0);
         const viewport_height = 2.0 * h;
         const viewport_width = aspect_ratio * viewport_height;
-        const w = look_from.minus(look_at).unit_vector();
-        const u = vup.cross(w).unit_vector();
+        const w = look_from.minus(look_at).unitVector();
+        const u = vup.cross(w).unitVector();
         const v = w.cross(u);
         const horizontal = u.scale(viewport_width);
         const vertical = v.scale(viewport_height);
@@ -34,7 +34,7 @@ pub const Camera = struct {
                         .horizontal = horizontal, .vertical = vertical};
     }
 
-    pub fn get_ray(camera: Camera, u: BaseFloat, v: BaseFloat) Ray {
+    pub fn getRay(camera: Camera, u: BaseFloat, v: BaseFloat) Ray {
         const dir = camera.lower_left_corner
                     .plus(camera.horizontal.scale(u))
                     .plus(camera.vertical.scale(v))
@@ -56,12 +56,12 @@ test "Camera.init()" {
     expectEqual(look_from, camera.origin);
 }
 
-test "Camera.get_ray()" {
+test "Camera.getRay()" {
     const look_from = Vec3.init(1.0, 0, 0);
     const look_at = Vec3.init(0.0, 0, 1.0);
     const vup = Vec3.init(0.0, 1.0, 0.0);
     const camera = Camera.init(look_from, look_at, vup, 45.0, 1.0);
-    const ray = camera.get_ray(1.0, 1.0);
+    const ray = camera.getRay(1.0, 1.0);
     const expected = Ray.init(look_from, look_at);
     expectEqual(expected.origin, ray.origin);
     // expectEqual(expected.direction, ray.direction);
