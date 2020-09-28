@@ -11,6 +11,7 @@ const Surface = @import("surface.zig").Surface;
 pub const Material = union (enum) {
     /// Example materials
     pub const black_metal = init_metal(Metal.init(Color.black));
+    pub const silver_metal = init_metal(Metal.init(Color.silver));
 
     lambertian: Lambertian,
     metal: Metal,
