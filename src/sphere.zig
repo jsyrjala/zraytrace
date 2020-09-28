@@ -18,6 +18,8 @@ pub const Sphere = struct {
     /// Axis aligned bounding box
     aabb: AABB,
 
+    pub const unit_sphere = init(Vec3.origin, 1.0, Material.black_metal);
+
     pub fn init(center: Vec3, radius: BaseFloat, material: Material) Sphere {
         const aabb = AABB.initMinMax(center.minus(Vec3.init(radius, radius, radius)),
                                      center.plus(Vec3.init(radius, radius, radius)));
