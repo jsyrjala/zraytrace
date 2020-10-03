@@ -9,6 +9,7 @@ const Vec3 = @import("vector.zig").Vec3;
 const Material = @import("material.zig").Material;
 const Surface = @import("surface.zig").Surface;
 const Triangle = @import("triangle.zig").Triangle;
+const AABB = @import("aabb.zig").AABB;
 
 const FaceVertex = struct {
     vertex: u64,
@@ -102,7 +103,8 @@ fn parseTriangles(allocator: *Allocator, material: *const Material,
 /// ReadObj file to a List of surfaces
 pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const Material) !ArrayList(Surface) {
     std.debug.warn("Reading OBJ model from {}\n", .{filename});
-
+    // this the return value from the function, not freeing it here
+    var surfaces = ArrayList(Surface).init(allocator);
 
     const file = try std.fs.cwd().openFile(filename, .{.read = true});
     defer file.close();
@@ -120,9 +122,6 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
 
     var vertex_normals = ArrayList(Vec3).init(tmp_allocator);
     defer vertex_normals.deinit();
-
-    var surfaces = ArrayList(Surface).init(tmp_allocator);
-    // defer surfaces.deinit();
 
     var face_count:u32 = 0;
     while (true) {
@@ -173,10 +172,13 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
         }
     }
     std.debug.warn("Found\n", .{});
+    std.debug.warn("  center point:   {}\n", .{Vec3.center(vertexes)});
+    std.debug.warn("  bounding box:   {}\n", .{AABB.initVertexes(vertexes)});
     std.debug.warn("  vertexes:       {}\n", .{vertexes.items.len});
     std.debug.warn("  vertex normals: {}\n", .{vertex_normals.items.len});
     std.debug.warn("  faces:          {}\n", .{face_count});
     std.debug.warn("  triangles:      {}\n", .{surfaces.items.len});
+    std.debug.warn("  surfaces:       {}\n", .{surfaces.items.len});
     return surfaces;
 }
 
