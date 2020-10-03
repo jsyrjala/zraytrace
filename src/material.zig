@@ -13,6 +13,8 @@ pub const Material = union (enum) {
     /// Example materials
     pub const black_metal = initMetal(Metal.init(Color.black));
     pub const silver_metal = initMetal(Metal.init(Color.silver));
+    pub const blue_metal = initMetal(Metal.init(Color.blue));
+    pub const green_metal = initMetal(Metal.init(Color.green));
 
     lambertian: Lambertian,
     metal: Metal,
