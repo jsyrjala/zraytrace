@@ -32,8 +32,8 @@ fn writeImageData(filename: []const u8, file: std.fs.File, image: *Image) ! u32 
     var y: usize = 0;
     while (y < image.height) : (y += 1) {
         var x: usize = 0;
-        while (x < image.height) : (x += 1) {
-            const pixel = image.pixels[y * image.width + x];
+        while (x < image.width) : (x += 1) {
+            const pixel = image.pixels[(image.height - y - 1) * image.width + x];
             try writer.print("{d: >3} {d: >3} {d: >3}  ",
                             .{convertValue(pixel.r),
                               convertValue(pixel.g),
