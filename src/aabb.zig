@@ -69,38 +69,39 @@ pub const AABB = struct {
 
     /// Check if ray hits the AABB
     /// Optimized method https://raytracing.github.io/books/RayTracingTheNextWeek.html#boundingvolumehierarchies/anoptimizedaabbhitmethod
-    pub fn hitAabb(box: AABB, ray: Ray, t_min: BaseFloat, t_max: BaseFloat) bool {
-        // x
-        var t0 = math.min((box.min.x() - ray.origin.x()) / ray.direction.x(),
-                            (box.max.x() - ray.origin.x()) / ray.direction.x());
-        var t1 = math.max((box.min.x() - ray.origin.x()) / ray.direction.x(),
-                            (box.max.x() - ray.origin.x()) / ray.direction.x());
-        var tmin = math.max(t0, t_min);
-        var tmax = math.min(t1, t_max);
-        if (tmax <= tmin) {
-            return false;
+    pub inline fn hitAabb(box: AABB, ray: Ray, t_min: BaseFloat, t_max: BaseFloat) bool {
+        var i: u8 = 0;
+        while (i < 3) : (i += 1) {
+            const inv_d: BaseFloat = 1.0 / ray.direction.elem(i);
+            var t0: BaseFloat = (box.min.elem(i) - ray.origin.elem(i)) * inv_d;
+            var t1: BaseFloat = (box.max.elem(i) - ray.origin.elem(i)) * inv_d;
+            if (inv_d < 0.0) {
+                var tmp = t0;
+                t0 = t1;
+                t1 = tmp;
+            }
+            const tmin = math.max(t0, t_min);
+            const tmax = math.min(t1, t_max);
+            if (tmax <= tmin) {
+                return false;
+            }
         }
+        return true;
+    }
 
-        // y
-        t0 = math.min((box.min.y() - ray.origin.y()) / ray.direction.y(),
-                        (box.max.y() - ray.origin.y()) / ray.direction.y());
-        t1 = math.max((box.min.y() - ray.origin.y()) / ray.direction.y(),
-                        (box.max.y() - ray.origin.y()) / ray.direction.y());
-        tmin = math.max(t0, t_min);
-        tmax = math.min(t1, t_max);
-        if (tmax <= tmin) {
-            return false;
-        }
-
-        // z
-        t0 = math.min((box.min.z() - ray.origin.z()) / ray.direction.z(),
-                        (box.max.z() - ray.origin.z()) / ray.direction.z());
-        t1 = math.max((box.min.z() - ray.origin.z()) / ray.direction.z(),
-                        (box.max.z() - ray.origin.z()) / ray.direction.z());
-        tmin = math.max(t0, t_min);
-        tmax = math.min(t1, t_max);
-        if (tmax <= tmin) {
-            return false;
+    /// Check if ray hits the AABB
+    pub inline fn hitAabb_2(box: AABB, ray: Ray, t_min: BaseFloat, t_max: BaseFloat) bool {
+        var i: u8 = 0;
+        while (i < 3) : (i += 1) {
+            var t0 = math.min((box.min.elem(i) - ray.origin.elem(i)) / ray.direction.elem(i),
+                                (box.max.elem(i) - ray.origin.elem(i)) / ray.direction.elem(i));
+            var t1 = math.max((box.min.elem(i) - ray.origin.elem(i)) / ray.direction.elem(i),
+                                (box.max.elem(i) - ray.origin.elem(i)) / ray.direction.elem(i));
+            const tmin = math.max(t0, t_min);
+            const tmax = math.min(t1, t_max);
+            if (tmax <= tmin) {
+                return false;
+            }
         }
         return true;
     }

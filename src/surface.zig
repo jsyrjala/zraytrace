@@ -5,11 +5,14 @@ const Vec3 = @import("vector.zig").Vec3;
 const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Material = @import("material.zig").Material;
+usingnamespace @import("aabb.zig");
+usingnamespace @import("bvh.zig");
 
 /// Surface is a "supertype" for all surfaces.
 pub const Surface = union (enum) {
     sphere: Sphere,
     triangle: Triangle,
+    bvh_node: BVHNode,
 
     pub fn initSphere(sphere: Sphere) Surface {
         return Surface{.sphere = sphere};
@@ -17,17 +20,23 @@ pub const Surface = union (enum) {
     pub fn initTriangle(triangle: Triangle) Surface {
         return Surface{.triangle = triangle};
     }
+    pub fn initBVHNode(bvh_node: BVHNode) Surface {
+        return Surface{.bvh_node = bvh_node};
+    }
+
     /// Find the right surface type and call it's hit method
-    pub inline fn hit(surface: Surface, ray:Ray, t_min: f32, t_max: f32) ?HitRecord {
+    pub inline fn hit(surface: Surface, ray: Ray, t_min: f32, t_max: f32) ?HitRecord {
         const enum_fields = comptime std.meta.fields(@TagType(Surface));
         inline for (std.meta.fields(Surface)) |field, i| {
             if (@enumToInt(surface) == enum_fields[i].value) {
                 return @field(surface, field.name).hit(surface, ray, t_min, t_max);
             }
         }
+        std.debug.warn("Surface.hit() unreachable.", .{});
         unreachable;
     }
 
+    // one way to do polymorphism
     pub inline fn material(surface: Surface) Material {
         const enum_fields = comptime std.meta.fields(@TagType(Surface));
         inline for (std.meta.fields(Surface)) |field, i| {
@@ -35,6 +44,18 @@ pub const Surface = union (enum) {
                 return @field(surface, field.name).material;
             }
         }
+        std.debug.warn("Surface.material() unreachable.", .{});
+        unreachable;
+    }
+
+    // other way to do polymorphism, code should be about identical in this and above
+    pub inline fn aabb(surface: Surface) AABB {
+        switch (surface) {
+            Surface.sphere => |obj| return obj.aabb,
+            Surface.triangle => |obj| return obj.aabb,
+            Surface.bvh_node => |obj| return obj.aabb,
+        }
+        std.debug.warn("Surface.aabb() unreachable. {}", .{surface});
         unreachable;
     }
 };
@@ -60,5 +81,6 @@ test "Surface.hit()" {
     try surfaces.append(Surface{.sphere = sphere});
     for (surfaces.items) |*surface| {
         _ = surface.hit(ray, 1.0, 20.0);
+        _ = surface.aabb();
     }
 }
