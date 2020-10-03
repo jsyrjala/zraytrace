@@ -73,6 +73,11 @@ pub const BVHNode = struct {
         const left_surfaces = surfaces[0..split];
         const right_surfaces = surfaces[split..];
 
+        // TODO
+        // compute sum of AABB surface areas for coordinate splits
+        // use the one that has smallest sum
+        // http://www.pbr-book.org/3ed-2018/Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#TheSurfaceAreaHeuristic
+
         std.debug.assert(surfaces.len == left_surfaces.len + right_surfaces.len);
 
         const left = try divide(allocator, random, surfaces[0..split], depth + 1, tracking);

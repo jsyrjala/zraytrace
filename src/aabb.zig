@@ -67,6 +67,14 @@ pub const AABB = struct {
         return math.fabs(diff.x()) * math.fabs(diff.y()) * math.fabs(diff.z());
     }
 
+    pub fn surfaceArea(box: AABB) BaseFloat {
+        const diff = box.min.minus(box.max);
+        const d_x = math.fabs(diff.x());
+        const d_y = math.fabs(diff.y());
+        const d_z = math.fabs(diff.z());
+        return 2 * (d_x * d_x + d_y * d_y + d_z * d_z);
+    }
+
     /// Check if ray hits the AABB
     /// Optimized method https://raytracing.github.io/books/RayTracingTheNextWeek.html#boundingvolumehierarchies/anoptimizedaabbhitmethod
     pub inline fn hitAabb(box: AABB, ray: Ray, t_min: BaseFloat, t_max: BaseFloat) bool {
@@ -177,6 +185,11 @@ test "AABB.initVertexes()" {
 test "AABB.volume()" {
     const box = AABB.initMinMax(Vec3.init(0.0,0.0,3.0), Vec3.init(-3.5, 2.0, 4.0));
     expectEqual(@as(BaseFloat, 7.0), box.volume());
+}
+
+test "AABB.surfaceArea()" {
+    const box = AABB.initMinMax(Vec3.origin, Vec3.init(1, -2.0, 3.0));
+    expectEqual(@as(BaseFloat, 2.0 + 8.0 + 18.0), box.surfaceArea());
 }
 
 test "AABB.hit() ray doesn't hit" {
