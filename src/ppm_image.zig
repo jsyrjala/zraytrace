@@ -15,9 +15,9 @@ fn convertValue(value: f32) u32 {
 }
 
 fn writeImageData(filename: []const u8, file: std.fs.File, image: *Image) ! u32 {
-    // TODO writing is slow, this needs BufferedWriter etc.
     const start_time = std.time.milliTimestamp();
-    const writer = file.outStream();
+    var buf_stream = std.io.bufferedOutStream(file.outStream());
+    const writer = buf_stream.outStream();
     const max_color = 255;
     try writer.print("P3\n", .{});
     try writer.print("# filename: {}\n", .{filename});
@@ -42,6 +42,8 @@ fn writeImageData(filename: []const u8, file: std.fs.File, image: *Image) ! u32 
         }
         try writer.print("\n", .{});
     }
+    // need to flush here, closing file will not flush
+    try buf_stream.flush();
     const end_time = std.time.milliTimestamp();
     const elapsed = @intToFloat(f32, end_time - start_time) / 1000.;
     const pixels_per_second = @intToFloat(f32, image.height * image.width) / elapsed;
