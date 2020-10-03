@@ -13,6 +13,7 @@ const HitRecord = @import("hit_record.zig").HitRecord;
 const Camera = @import("camera.zig").Camera;
 const Material = @import("material.zig").Material;
 const Surface = @import("surface.zig").Surface;
+usingnamespace @import("bvh.zig");
 
 
 const Progress = struct {
@@ -105,29 +106,57 @@ pub const RenderParams = struct {
     height: u16,
     samples_per_pixel: u16,
     max_depth: u16,
+    bounded_volume_hierarchy: bool = true,
 };
+
+// TODO use ArrayList(*Surface) everywhere (or SurfaceList)
+fn bounded_volume_hierarchy(allocator: *Allocator, random: *Random, surfaces: ArrayList(Surface)) ! ArrayList(Surface) {
+    var surface_pointers = ArrayList(*Surface).init(allocator);
+    defer surface_pointers.deinit();
+    for (surfaces.items) |*surface| {
+        try surface_pointers.append(surface);
+    }
+    const bvh_root = try BVHNode.init(allocator, random, &surface_pointers);
+    var result = ArrayList(Surface).init(allocator);
+    try result.append(Surface.initBVHNode(bvh_root));
+    return result;
+}
+
+// TODO make a SurfaceList abstraction
+fn preprocess_sufraces(allocator: *Allocator, random: *Random,
+                        surfaces: ArrayList(Surface), render_params: RenderParams) ! ArrayList(Surface) {
+    if (render_params.bounded_volume_hierarchy) {
+        std.debug.warn("Using Bounded Volume Hierarchy\n", .{});
+        return bounded_volume_hierarchy(allocator, random, surfaces);
+    }
+    std.debug.warn("Using surface list\n", .{});
+    return surfaces;
+}
 
 /// Render a scene
 pub fn render(allocator: *Allocator, random: *Random,
                 camera: Camera, surfaces: ArrayList(Surface),
-                renderParams: RenderParams,) ! *Image {
+                render_params: RenderParams,) ! *Image {
     var start_time = std.time.milliTimestamp();
     var progress = Progress.init(start_time);
     var progress_prev = Progress.init(start_time);
 
     std.debug.warn("Raytrace start\n", .{});
-    std.debug.warn(" - Surfaces: {}\n", .{surfaces.items.len});
-    std.debug.warn(" - Pixels: {}x{}\n", .{renderParams.width, renderParams.height});
-    std.debug.warn(" - Samples per pixel: {}\n", .{renderParams.samples_per_pixel});
-    std.debug.warn(" - Recursion depth: {}\n", .{renderParams.max_depth});
+    std.debug.warn(" - Surfaces:                 {}\n", .{surfaces.items.len});
+    std.debug.warn(" - Pixels:                   {}x{}\n", .{render_params.width, render_params.height});
+    std.debug.warn(" - Samples per pixel:        {}\n", .{render_params.samples_per_pixel});
+    std.debug.warn(" - Recursion depth:          {}\n", .{render_params.max_depth});
+    std.debug.warn(" - Bounded volume hierarchy: {}\n", .{render_params.bounded_volume_hierarchy});
 
-    var image = try Image.init(allocator, renderParams.width, renderParams.height);
+    const processed_surfaces = try preprocess_sufraces(allocator, random, surfaces, render_params);
 
-    const f_width = @intToFloat(BaseFloat, renderParams.width);
-    const f_height = @intToFloat(BaseFloat, renderParams.height);
+    var image = try Image.init(allocator, render_params.width, render_params.height);
+
+    const f_width = @intToFloat(BaseFloat, render_params.width);
+    const f_height = @intToFloat(BaseFloat, render_params.height);
 
     var color_acc = Color.newBlack();
-    const color_scale = 1.0 / @intToFloat(f32, renderParams.samples_per_pixel);
+    const color_scale = 1.0 / @intToFloat(f32, render_params.samples_per_pixel);
 
     // loop over every pixel on the screen
     var y: usize = 0;
@@ -135,16 +164,16 @@ pub fn render(allocator: *Allocator, random: *Random,
         const f_y = @intToFloat(BaseFloat, y);
 
         var x: usize = 0;
-        const image_offset_y = y * renderParams.width;
+        const image_offset_y = y * render_params.width;
         while (x < image.height) : (x += 1) {
             color_acc.setMutate(Color.newBlack());
             // send several sample rays per pixel
             var sample: usize = 0;
-            while (sample < renderParams.samples_per_pixel) : (sample += 1) {
+            while (sample < render_params.samples_per_pixel) : (sample += 1) {
                 const u = (@intToFloat(BaseFloat, x) + random.float(BaseFloat) - 0.5) / f_width;
                 const v = (f_y + random.float(BaseFloat) - 0.5) / f_height;
                 const ray = camera.getRay(u, v);
-                const color = rayColor(ray, surfaces, renderParams.max_depth, &progress);
+                const color = rayColor(ray, processed_surfaces, render_params.max_depth, &progress);
                 color_acc.addMutate(color);
                 progress.samples_processed += 1;
             }
@@ -152,7 +181,7 @@ pub fn render(allocator: *Allocator, random: *Random,
             progress.pixels_processed += 1;
             image.pixels[image_offset] = color_acc.scale(color_scale);
         }
-        print_progress(y + 1, renderParams.height, &progress, &progress_prev);
+        print_progress(y + 1, render_params.height, &progress, &progress_prev);
         progress_prev = progress;
         progress.scanline_start_time = std.time.milliTimestamp();
     }
@@ -205,7 +234,8 @@ test "Render something" {
     try objects.append(Surface.initSphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, purple_matte)));
     try objects.append(Surface.initSphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, green_matte)));
 
-    const render_params = RenderParams{.width = 20, .height = 20, .samples_per_pixel = 5, .max_depth = 5};
+    const render_params = RenderParams{.width = 20, .height = 20, .samples_per_pixel = 5, .max_depth = 5,
+                                        .bounded_volume_hierarchy = false};
     const scene_image = try render(allocator, random, camera, objects, render_params);
     defer scene_image.deinit();
     const foo = ppm_image.writeFile("./target/render_test.ppm", scene_image);
@@ -236,7 +266,8 @@ test "Render Man model" {
     for (man_model.items) |surface| {
         try objects.append(surface);
     }
-    const render_params = RenderParams{.width = 30, .height = 30, .samples_per_pixel = 5, .max_depth = 5};
+    const render_params = RenderParams{.width = 30, .height = 30, .samples_per_pixel = 5, .max_depth = 5,
+                                        .bounded_volume_hierarchy = true};
     const scene_image = try render(allocator, random, camera, objects, render_params);
     defer scene_image.deinit();
     const foo = ppm_image.writeFile("./target/render_man.ppm", scene_image);
