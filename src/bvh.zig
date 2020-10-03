@@ -29,7 +29,6 @@ const Tracking = struct {
 };
 
 pub const BVHNode = struct {
-    allocator: ?*Allocator,
     aabb: AABB,
     left_child: *Surface,
     right_child: *Surface,
@@ -83,13 +82,13 @@ pub const BVHNode = struct {
 
     fn create(allocator: *Allocator, random: *Random, left: *Surface, right: *Surface) ! *Surface {
         const aabb = AABB.initAabb(left.aabb(), right.aabb());
-        const bvh_node = BVHNode{.allocator = null, .left_child = left, .right_child = right, .aabb = aabb};
+        const bvh_node = BVHNode{.left_child = left, .right_child = right, .aabb = aabb};
         const surface = try allocator.create(Surface);
         surface.* = Surface.initBVHNode(bvh_node);
         return surface;
     }
 
-    pub fn init(allocator: *Allocator, random: *Random, surfaces: *ArrayList(*Surface)) ! BHVNode {
+    pub fn init(allocator: *Allocator, random: *Random, surfaces: *ArrayList(*Surface)) ! BVHNode {
         // TODO create own Arena allocator here?
         var tracking = try allocator.create(Tracking);
         defer allocator.destroy(tracking);
@@ -100,9 +99,9 @@ pub const BVHNode = struct {
         std.debug.warn("Max depth in BVH is {}\n", .{tracking.max_depth});
 
         // here root bhv_node is wrapped in a Surface, releasing it now
-        const root_bhv_node = root_node.bhv_node;
-        allocator.destroy(root_node)
-        return root_bhv_node;
+        const root_bvh_node = root_node.bvh_node;
+        allocator.destroy(root_node);
+        return root_bvh_node;
     }
 
     pub fn hit(node: BVHNode, surface: Surface, ray: Ray, t_min: f32, t_max: f32) ?HitRecord {
@@ -189,15 +188,17 @@ test "BVHNode.hit()" {
 
     var surfaces = try createSurfaces(allocator, random, 3127);
     defer surfaces.deinit();
-    const surface = try BVHNode.init(allocator, random, &surfaces);
-    defer surface.deinit();
+    const bvh_node = try BVHNode.init(allocator, random, &surfaces);
+    // defer bvh_node.deinit();
+
+    const bvh_surface = Surface.initBVHNode(bvh_node);
 
     const ray_count = 2000;
     var i: u64 = 0;
     var hits: u64 = 0;
     while (i<ray_count) : ( i+= 1) {
         const ray = Ray.init(Vec3.randomUnitVector(random).scale(100.0), Vec3.randomUnitVector(random));
-        const hit = surface.*.hit(ray, 0.0001, std.math.inf(BaseFloat));
+        const hit = bvh_surface.hit(ray, 0.0001, std.math.inf(BaseFloat));
         if (hit != null) {
             hits += 1;
         }

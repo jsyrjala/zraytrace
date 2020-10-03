@@ -38,11 +38,11 @@ pub const Surface = union (enum) {
 
     // one way to do polymorphism
     pub inline fn material(surface: Surface) Material {
-        const enum_fields = comptime std.meta.fields(@TagType(Surface));
-        inline for (std.meta.fields(Surface)) |field, i| {
-            if (@enumToInt(surface) == enum_fields[i].value) {
-                return @field(surface, field.name).material;
-            }
+        switch (surface) {
+            Surface.sphere => |obj| return obj.material,
+            Surface.triangle => |obj| return obj.material,
+            // no material for bvh node
+            else => unreachable
         }
         std.debug.warn("Surface.material() unreachable.", .{});
         unreachable;
@@ -50,10 +50,11 @@ pub const Surface = union (enum) {
 
     // other way to do polymorphism, code should be about identical in this and above
     pub inline fn aabb(surface: Surface) AABB {
-        switch (surface) {
-            Surface.sphere => |obj| return obj.aabb,
-            Surface.triangle => |obj| return obj.aabb,
-            Surface.bvh_node => |obj| return obj.aabb,
+        const enum_fields = comptime std.meta.fields(@TagType(Surface));
+        inline for (std.meta.fields(Surface)) |field, i| {
+            if (@enumToInt(surface) == enum_fields[i].value) {
+                return @field(surface, field.name).aabb;
+            }
         }
         std.debug.warn("Surface.aabb() unreachable. {}", .{surface});
         unreachable;
