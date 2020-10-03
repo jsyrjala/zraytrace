@@ -87,8 +87,7 @@ pub const Vec3 = struct {
         return Vec3.init(self._x - scalar, self._y - scalar, self._z - scalar);
     }
 
-    // TODO why not inline allowed here?
-    pub fn scale(self: Vec3, scalar: BaseFloat) Vec3 {
+    pub inline fn scale(self: Vec3, scalar: BaseFloat) Vec3 {
         return Vec3.init(self._x * scalar, self._y * scalar, self._z * scalar);
     }
 
