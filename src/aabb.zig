@@ -68,6 +68,7 @@ pub const AABB = struct {
     }
 
     /// Check if ray hits the AABB
+    /// Optimized method https://raytracing.github.io/books/RayTracingTheNextWeek.html#boundingvolumehierarchies/anoptimizedaabbhitmethod
     pub fn hitAabb(box: AABB, ray: Ray, t_min: BaseFloat, t_max: BaseFloat) bool {
         // x
         var t0 = math.min((box.min.x() - ray.origin.x()) / ray.direction.x(),

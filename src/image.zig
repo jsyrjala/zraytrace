@@ -25,6 +25,15 @@ pub const Color = struct {
         return Color{.r = r, .g = g, .b = b};
     }
 
+    pub inline fn elem(v: Color, index: u8) f32 {
+        switch (index) {
+            0 => return v.r,
+            1 => return v.g,
+            2 => return v.b,
+            else => unreachable
+        }
+    }
+
     pub inline fn newBlack() Color {
         return init(0.0, 0.0, 0.0);
     }
@@ -97,6 +106,21 @@ test "Image" {
     expectEqual(Color.newBlack(), image.pixels[0]);
     expectEqual(Color.newBlack(), image.pixels[63999]);
     expectEqual(@as(usize, 64000), image.pixels.len);
+}
+
+
+test "Color.init()" {
+    const my_r: f32 = 0.1;
+    const my_g: f32 = 0.2;
+    const my_b: f32 = 0.6;
+    const color = Color.init(0.1, 0.2, 0.6);
+    expectEqual(my_r, color.r);
+    expectEqual(my_g, color.g);
+    expectEqual(my_b, color.b);
+
+    expectEqual(my_r, color.elem(0));
+    expectEqual(my_g, color.elem(1));
+    expectEqual(my_b, color.elem(2));
 }
 
 test "Color.add()" {
