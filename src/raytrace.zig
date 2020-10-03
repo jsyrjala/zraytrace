@@ -18,6 +18,8 @@ var recursion_depth_count: u64 = 0;
 var recursion_depth_count_prev: u64 = 0;
 var reflection_count: u64 = 0;
 var reflection_count_prev: u64 = 0;
+var background_hit: u64 = 0;
+var background_hit_prev: u64 = 0;
 
 inline fn backgroundColor(ray: Ray) Color {
     const unit_direction = ray.direction.unitVector();
@@ -42,6 +44,7 @@ fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
         }
     }
     if (closest_hit == null) {
+        background_hit += 1;
         return backgroundColor(ray);
     }
     const hit_record = closest_hit.?;
@@ -59,12 +62,14 @@ fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
 }
 
 fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) void {
-    std.debug.warn("Scanline: {}/{} Pixels: {} Recursion limit: {} Reflections: {}\n",
+    std.debug.warn("Scanline: {}/{} Pixels: {} Recursion limit: {} Reflections: {} Background hits: {}\n",
                    .{scanline, total_scanlines, pixels_processed,
                    (recursion_depth_count - recursion_depth_count_prev),
-                   (reflection_count - reflection_count_prev)});
+                   (reflection_count - reflection_count_prev),
+                   (background_hit - background_hit_prev)});
     recursion_depth_count_prev = recursion_depth_count;
     reflection_count_prev = reflection_count;
+    background_hit_prev = background_hit;
 }
 
 /// Render a scene
@@ -77,6 +82,7 @@ pub fn render(allocator: *Allocator, random: *Random,
     std.debug.warn(" - Pixels: {}x{}\n", .{width, height});
     std.debug.warn(" - Samples per pixel: {}\n", .{samples_per_pixel});
     std.debug.warn(" - Recursion depth: {}\n", .{max_depth});
+    var start_time = std.time.milliTimestamp();
     var image = try Image.init(allocator, width, height);
 
     var pixels_processed: u64 = 0;
@@ -108,8 +114,16 @@ pub fn render(allocator: *Allocator, random: *Random,
         }
         print_progress(@as(u64, y + 1), height, pixels_processed);
     }
+    const runtime = @intToFloat(f32, std.time.milliTimestamp() - start_time) / 1000.0;
+    std.debug.warn("Rendering ready\n", .{});
+    std.debug.warn("  Total reflections:     {}\n", .{reflection_count});
+    std.debug.warn("  Total background hits: {}\n", .{background_hit});
+    std.debug.warn("  Total pixels:          {}\n", .{image.width * image.height});
+    std.debug.warn("  Pixels per second:     {:0.2} pixels/s\n", .{@intToFloat(f32, image.width * image.height) / runtime});
+    std.debug.warn("  Total runtime:         {:0.2} seconds\n", .{runtime});
     return image;
 }
+
 
 //// Testing
 const expect = std.testing.expect;
@@ -156,4 +170,42 @@ test "Render something" {
                                 width, height, samples_per_pixel, max_depth);
     defer scene_image.deinit();
     const foo = ppm_image.writeFile("./target/render_test.ppm", scene_image);
+}
+
+const ObjReader = @import("obj_reader.zig");
+
+test "Render Man model" {
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -30.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = &arena.allocator;
+
+    var objects = ArrayList(Surface).init(allocator);
+    defer objects.deinit();
+    var prng = std.rand.DefaultPrng.init(42);
+    var random = &prng.random;
+
+    const filename = "./models/man/Man.obj";
+    const manModel = try ObjReader.readObjFile(allocator, filename, &Material.blue_metal);
+    defer manModel.deinit();
+    // objects
+    const top: BaseFloat = -2.33;
+    const radius: BaseFloat = 100.0;
+
+    const center = Vec3.init(1.66445508e-01, -19.50914907e+00, 7.37018966e+00);
+
+    const earth_center = Vec3.init(1.66445508e-01,  top - radius, 7.37018966e+00);
+
+    try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.green_metal)));
+    for (manModel.items) |surface| {
+        try objects.append(surface);
+    }
+    const width = 300;
+    const height = 300;
+    const samples_per_pixel = 5;
+    const max_depth = 5;
+    const scene_image = try render(allocator, random, camera, objects,
+                                width, height, samples_per_pixel, max_depth);
+    defer scene_image.deinit();
+    const foo = ppm_image.writeFile("./target/render_man.ppm", scene_image);
 }
