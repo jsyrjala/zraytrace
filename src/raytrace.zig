@@ -14,13 +14,46 @@ const Camera = @import("camera.zig").Camera;
 const Material = @import("material.zig").Material;
 const Surface = @import("surface.zig").Surface;
 
-var recursion_depth_count: u64 = 0;
-var recursion_depth_count_prev: u64 = 0;
-var reflection_count: u64 = 0;
-var reflection_count_prev: u64 = 0;
-var background_hit: u64 = 0;
-var background_hit_prev: u64 = 0;
 
+const Progress = struct {
+    start_time: u64,
+    scanline_start_time: u64,
+    recursion_depth_hits: u64,
+    reflections: u64,
+    background_hits: u64,
+    pixels_processed: u64,
+    samples_processed: u64,
+    rays_processed: u64,
+
+    pub fn init(start_time: u64) Progress {
+        return .{.start_time = start_time,
+                 .scanline_start_time = start_time,
+                 .recursion_depth_hits = 0,
+                 .reflections = 0,
+                 .background_hits = 0,
+                 .pixels_processed = 0,
+                 .samples_processed = 0,
+                 .rays_processed = 0,};
+    }
+};
+
+/// Print progress to stdout
+fn print_progress(scanline: u64, total_scanlines: u64, progress: *Progress, progress_prev: *Progress) void {
+    const pixel_change = progress.pixels_processed - progress_prev.pixels_processed;
+    const time_diff = @intToFloat(f32, std.time.milliTimestamp() - progress.scanline_start_time);
+    const pixels_per_second = @intToFloat(f32, pixel_change) / time_diff;
+    std.debug.warn("Scanline: {}/{} Pixels: {} Samples: {} Rays: {} Recursion limit: {} Reflections: {} Background hits: {} Pixels/s: {:0.2}\n",
+                   .{
+                       scanline, total_scanlines,
+                       progress.pixels_processed, progress.samples_processed, progress.rays_processed,
+                       (progress.recursion_depth_hits - progress_prev.recursion_depth_hits),
+                       (progress.reflections - progress_prev.reflections),
+                       (progress.background_hits - progress_prev.background_hits),
+                       pixels_per_second,
+                   });
+}
+
+/// Background color for rays that do not hit anything
 inline fn backgroundColor(ray: Ray) Color {
     const unit_direction = ray.direction.unitVector();
     const t = 0.5 * (unit_direction.y() + 1.0);
@@ -28,14 +61,19 @@ inline fn backgroundColor(ray: Ray) Color {
             .add(Color.init(0.5, 0.7, 1.0).scale(t));
 }
 
-fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
+fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32, progress: *Progress) Color {
     if (depth <= 0) {
-        recursion_depth_count += 1;
+        // ray has been reflecting many times before hitting anything
+        progress.recursion_depth_hits += 1;
+        std.debug.warn("rec {}\n", .{progress.recursion_depth_hits});
         return Color.black;
     }
+    progress.*.rays_processed += 1;
+
     var t_min: BaseFloat = 0.001;
     var t_max = math.inf(BaseFloat);
     var closest_hit: ?HitRecord = null;
+    // loop over the surfaces and check if the ray hits any of them
     for (surfaces.items) |*surface, index| {
         const current_hit_record = surface.hit(ray, t_min, t_max);
         if (current_hit_record != null) {
@@ -44,7 +82,8 @@ fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
         }
     }
     if (closest_hit == null) {
-        background_hit += 1;
+        // ray hits the background
+        progress.background_hits += 1;
         return backgroundColor(ray);
     }
     const hit_record = closest_hit.?;
@@ -55,71 +94,78 @@ fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32) Color {
         // material fully absorbed the ray
         return Color.black;
     }
-    reflection_count += 1;
+    progress.reflections += 1;
+
     const scattering = potential_scattering.?;
     // material reflected the ray
-    return scattering.attenuation.multiply(rayColor(scattering.scattered_ray, surfaces, depth - 1));
+    return scattering.attenuation.multiply(rayColor(scattering.scattered_ray, surfaces, depth - 1, progress));
 }
 
-fn print_progress(scanline: u64, total_scanlines: u64, pixels_processed: u64) void {
-    std.debug.warn("Scanline: {}/{} Pixels: {} Recursion limit: {} Reflections: {} Background hits: {}\n",
-                   .{scanline, total_scanlines, pixels_processed,
-                   (recursion_depth_count - recursion_depth_count_prev),
-                   (reflection_count - reflection_count_prev),
-                   (background_hit - background_hit_prev)});
-    recursion_depth_count_prev = recursion_depth_count;
-    reflection_count_prev = reflection_count;
-    background_hit_prev = background_hit;
-}
+pub const RenderParams = struct {
+    width: u16,
+    height: u16,
+    samples_per_pixel: u16,
+    max_depth: u16,
+};
 
 /// Render a scene
 pub fn render(allocator: *Allocator, random: *Random,
                 camera: Camera, surfaces: ArrayList(Surface),
-                width: u16, height: u16,
-                samples_per_pixel: u16, max_depth: u16) ! *Image {
+                renderParams: RenderParams,) ! *Image {
+    var start_time = std.time.milliTimestamp();
+    var progress = Progress.init(start_time);
+    var progress_prev = Progress.init(start_time);
+
     std.debug.warn("Raytrace start\n", .{});
     std.debug.warn(" - Surfaces: {}\n", .{surfaces.items.len});
-    std.debug.warn(" - Pixels: {}x{}\n", .{width, height});
-    std.debug.warn(" - Samples per pixel: {}\n", .{samples_per_pixel});
-    std.debug.warn(" - Recursion depth: {}\n", .{max_depth});
-    var start_time = std.time.milliTimestamp();
-    var image = try Image.init(allocator, width, height);
+    std.debug.warn(" - Pixels: {}x{}\n", .{renderParams.width, renderParams.height});
+    std.debug.warn(" - Samples per pixel: {}\n", .{renderParams.samples_per_pixel});
+    std.debug.warn(" - Recursion depth: {}\n", .{renderParams.max_depth});
 
-    var pixels_processed: u64 = 0;
-    const f_width = @intToFloat(BaseFloat, width);
-    const f_height = @intToFloat(BaseFloat, height);
+    var image = try Image.init(allocator, renderParams.width, renderParams.height);
+
+    const f_width = @intToFloat(BaseFloat, renderParams.width);
+    const f_height = @intToFloat(BaseFloat, renderParams.height);
 
     var color_acc = Color.newBlack();
-    const color_scale = 1.0 / @intToFloat(f32, samples_per_pixel);
+    const color_scale = 1.0 / @intToFloat(f32, renderParams.samples_per_pixel);
 
+    // loop over every pixel on the screen
     var y: usize = 0;
     while (y < image.height) : (y += 1) {
         const f_y = @intToFloat(BaseFloat, y);
 
         var x: usize = 0;
+        const image_offset_y = y * renderParams.width;
         while (x < image.height) : (x += 1) {
             color_acc.setMutate(Color.newBlack());
-            pixels_processed += 1;
-            // TODO implement
+            // send several sample rays per pixel
             var sample: usize = 0;
-            while (sample < samples_per_pixel) : (sample += 1) {
+            while (sample < renderParams.samples_per_pixel) : (sample += 1) {
                 const u = (@intToFloat(BaseFloat, x) + random.float(BaseFloat) - 0.5) / f_width;
                 const v = (f_y + random.float(BaseFloat) - 0.5) / f_height;
                 const ray = camera.getRay(u, v);
-                const color = rayColor(ray, surfaces, max_depth);
+                const color = rayColor(ray, surfaces, renderParams.max_depth, &progress);
                 color_acc.addMutate(color);
+                progress.samples_processed += 1;
             }
-            const image_offset = y * width + x;
+            const image_offset = image_offset_y + x;
+            progress.pixels_processed += 1;
             image.pixels[image_offset] = color_acc.scale(color_scale);
         }
-        print_progress(@as(u64, y + 1), height, pixels_processed);
+        print_progress(y + 1, renderParams.height, &progress, &progress_prev);
+        progress_prev = progress;
+        progress.scanline_start_time = std.time.milliTimestamp();
     }
-    const runtime = @intToFloat(f32, std.time.milliTimestamp() - start_time) / 1000.0;
+    const runtime = @intToFloat(f32, std.time.milliTimestamp() - progress.start_time) / 1000.0;
     std.debug.warn("Rendering ready\n", .{});
-    std.debug.warn("  Total reflections:     {}\n", .{reflection_count});
-    std.debug.warn("  Total background hits: {}\n", .{background_hit});
-    std.debug.warn("  Total pixels:          {}\n", .{image.width * image.height});
-    std.debug.warn("  Pixels per second:     {:0.2} pixels/s\n", .{@intToFloat(f32, image.width * image.height) / runtime});
+    std.debug.warn("  Total reflections:     {}\n", .{progress.reflections});
+    std.debug.warn("  Total background hits: {}\n", .{progress.background_hits});
+    std.debug.warn("  Total pixels:          {}\n", .{progress.pixels_processed});
+    std.debug.warn("  Total samples:         {}\n", .{progress.samples_processed});
+    std.debug.warn("  Total rays:            {}\n", .{progress.rays_processed});
+    std.debug.warn("  Total reflections:     {}\n", .{progress.reflections});
+    std.debug.warn("  Pixels per second:     {:0.2} pixels/s\n", .{@intToFloat(f32, progress.pixels_processed) / runtime});
     std.debug.warn("  Total runtime:         {:0.2} seconds\n", .{runtime});
     return image;
 }
@@ -150,8 +196,6 @@ test "Render something" {
     const green_metal = Material.initMetal(Metal.init(Color.green));
     const blue_metal = Material.initMetal(Metal.init(Color.blue));
     const white_metal = Material.initMetal(Metal.init(Color.white));
-
-
     const silver_metal = Material.initLambertian(Lambertian.init(random, Color.silver));
 
     const green_matte = Material.initLambertian(Lambertian.init(random, Color.green));
@@ -162,12 +206,8 @@ test "Render something" {
     try objects.append(Surface.initSphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, purple_matte)));
     try objects.append(Surface.initSphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, green_matte)));
 
-    const width = 20;
-    const height = 20;
-    const samples_per_pixel = 5;
-    const max_depth = 5;
-    const scene_image = try render(allocator, random, camera, objects,
-                                width, height, samples_per_pixel, max_depth);
+    const render_params = RenderParams{.width = 20, .height = 20, .samples_per_pixel = 5, .max_depth = 5};
+    const scene_image = try render(allocator, random, camera, objects, render_params);
     defer scene_image.deinit();
     const foo = ppm_image.writeFile("./target/render_test.ppm", scene_image);
 }
@@ -191,21 +231,14 @@ test "Render Man model" {
     // objects
     const top: BaseFloat = -2.33;
     const radius: BaseFloat = 100.0;
-
-    const center = Vec3.init(1.66445508e-01, -19.50914907e+00, 7.37018966e+00);
-
-    const earth_center = Vec3.init(1.66445508e-01,  top - radius, 7.37018966e+00);
+    const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
 
     try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.green_metal)));
     for (manModel.items) |surface| {
         try objects.append(surface);
     }
-    const width = 300;
-    const height = 300;
-    const samples_per_pixel = 5;
-    const max_depth = 5;
-    const scene_image = try render(allocator, random, camera, objects,
-                                width, height, samples_per_pixel, max_depth);
+    const render_params = RenderParams{.width = 30, .height = 30, .samples_per_pixel = 5, .max_depth = 5};
+    const scene_image = try render(allocator, random, camera, objects, render_params);
     defer scene_image.deinit();
     const foo = ppm_image.writeFile("./target/render_man.ppm", scene_image);
 }
