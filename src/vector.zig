@@ -21,6 +21,15 @@ pub const Vec3 = struct {
     pub const y_unit = Vec3.init(0., 1., 0.);
     pub const z_unit = Vec3.init(0., 0., 1.);
 
+    pub inline fn elem(v: Vec3, index: u8) BaseFloat {
+        switch (index) {
+            0 => return v.x(),
+            1 => return v.y(),
+            2 => return v.z(),
+            else => unreachable
+        }
+    }
+
     pub inline fn x(v: Vec3) BaseFloat {
         return v._x;
     }
@@ -167,6 +176,21 @@ pub const Vec3 = struct {
 const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
 const DefaultPrng = std.rand.DefaultPrng;
+
+test "Vec3.init()" {
+    const my_x: BaseFloat = 1.0;
+    const my_y: BaseFloat = 2.0;
+    const my_z: BaseFloat = 3.0;
+    const vec = Vec3.init(my_x, my_y, my_z);
+
+    expectEqual(my_x, vec.x());
+    expectEqual(my_y, vec.y());
+    expectEqual(my_z, vec.z());
+
+    expectEqual(my_x, vec.elem(0));
+    expectEqual(my_y, vec.elem(1));
+    expectEqual(my_z, vec.elem(2));
+}
 
 test "Vec3.dot()" {
     const vec_0 = Vec3.init(0.0, 0.0, 0.0);
