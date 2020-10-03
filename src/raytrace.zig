@@ -40,7 +40,7 @@ const Progress = struct {
 /// Print progress to stdout
 fn print_progress(scanline: u64, total_scanlines: u64, progress: *Progress, progress_prev: *Progress) void {
     const pixel_change = progress.pixels_processed - progress_prev.pixels_processed;
-    const time_diff = @intToFloat(f32, std.time.milliTimestamp() - progress.scanline_start_time);
+    const time_diff = @intToFloat(f32, std.time.milliTimestamp() - progress.scanline_start_time) / 1000.;
     const pixels_per_second = @intToFloat(f32, pixel_change) / time_diff;
     std.debug.warn("Scanline: {}/{} Pixels: {} Samples: {} Rays: {} Recursion limit: {} Reflections: {} Background hits: {} Pixels/s: {:0.2}\n",
                    .{
@@ -65,7 +65,6 @@ fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32, progress: *Progr
     if (depth <= 0) {
         // ray has been reflecting many times before hitting anything
         progress.recursion_depth_hits += 1;
-        std.debug.warn("rec {}\n", .{progress.recursion_depth_hits});
         return Color.black;
     }
     progress.*.rays_processed += 1;
@@ -226,15 +225,15 @@ test "Render Man model" {
     var random = &prng.random;
 
     const filename = "./models/man/Man.obj";
-    const manModel = try ObjReader.readObjFile(allocator, filename, &Material.blue_metal);
-    defer manModel.deinit();
+    const man_model = try ObjReader.readObjFile(allocator, filename, &Material.blue_metal);
+    defer man_model.deinit();
     // objects
     const top: BaseFloat = -2.33;
     const radius: BaseFloat = 100.0;
     const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
 
-    try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.green_metal)));
-    for (manModel.items) |surface| {
+    try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.green_matte(random))));
+    for (man_model.items) |surface| {
         try objects.append(surface);
     }
     const render_params = RenderParams{.width = 30, .height = 30, .samples_per_pixel = 5, .max_depth = 5};

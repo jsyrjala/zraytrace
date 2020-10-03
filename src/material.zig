@@ -16,6 +16,10 @@ pub const Material = union (enum) {
     pub const blue_metal = initMetal(Metal.init(Color.blue));
     pub const green_metal = initMetal(Metal.init(Color.green));
 
+    pub fn green_matte(random: *Random) Material {
+        return initLambertian(Lambertian.init(random, Color.green));
+    }
+
     lambertian: Lambertian,
     metal: Metal,
 
@@ -50,7 +54,7 @@ pub const Lambertian = struct {
     random: *Random,
     albedo: Color,
 
-    pub inline fn init(random: *Random, color: Color) Lambertian {
+    pub fn init(random: *Random, color: Color) Lambertian {
         return .{.random = random, .albedo = color};
     }
 
@@ -65,7 +69,7 @@ pub const Lambertian = struct {
 /// Metal material
 pub const Metal = struct {
     albedo: Color,
-    pub inline fn init(color: Color) Metal {
+    pub fn init(color: Color) Metal {
         return .{.albedo = color};
     }
 

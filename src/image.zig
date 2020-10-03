@@ -20,7 +20,8 @@ pub const Color = struct {
     pub const blue = init(0.0, 0.0, 1.0);
 
 
-    pub inline fn init(r: f32, g: f32, b: f32) Color {
+    // TODO why not inline allowed here?
+    pub fn init(r: f32, g: f32, b: f32) Color {
         return Color{.r = r, .g = g, .b = b};
     }
 
