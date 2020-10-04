@@ -5,7 +5,7 @@ const math = std.math;
 const ArrayList = std.ArrayList;
 const BaseFloat = @import("base.zig").BaseFloat;
 const Vec3 = @import("vector.zig").Vec3;
-const Ray = @import("ray.zig").Ray;
+usingnamespace @import("ray.zig");
 const img = @import("image.zig");
 const Image = img.Image;
 const Color = img.Color;
@@ -19,22 +19,16 @@ usingnamespace @import("bvh.zig");
 const Progress = struct {
     start_time: u64,
     scanline_start_time: u64,
-    recursion_depth_hits: u64,
-    reflections: u64,
-    background_hits: u64,
-    pixels_processed: u64,
-    samples_processed: u64,
-    rays_processed: u64,
+    recursion_depth_hits: u64 = 0.0,
+    reflections: u64 = 0.0,
+    background_hits: u64 = 0.0,
+    pixels_processed: u64 = 0.0,
+    samples_processed: u64 = 0.0,
+    rays_processed: u64 = 0.0,
 
     pub fn init(start_time: u64) Progress {
         return .{.start_time = start_time,
-                 .scanline_start_time = start_time,
-                 .recursion_depth_hits = 0,
-                 .reflections = 0,
-                 .background_hits = 0,
-                 .pixels_processed = 0,
-                 .samples_processed = 0,
-                 .rays_processed = 0,};
+                 .scanline_start_time = start_time, };
     }
 };
 
