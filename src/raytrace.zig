@@ -17,8 +17,8 @@ usingnamespace @import("bvh.zig");
 
 
 const Progress = struct {
-    start_time: u64,
-    scanline_start_time: u64,
+    start_time: i64,
+    scanline_start_time: i64,
     recursion_depth_hits: u64 = 0.0,
     reflections: u64 = 0.0,
     background_hits: u64 = 0.0,
@@ -26,7 +26,7 @@ const Progress = struct {
     samples_processed: u64 = 0.0,
     rays_processed: u64 = 0.0,
 
-    pub fn init(start_time: u64) Progress {
+    pub fn init(start_time: i64) Progress {
         return .{.start_time = start_time,
                  .scanline_start_time = start_time, };
     }

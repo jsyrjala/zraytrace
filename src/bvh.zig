@@ -48,6 +48,11 @@ pub const BVHNode = struct {
 
     const axis_comparators = [_]* const fn (a: *Surface, b: *Surface) bool{&compareX, &compareY, &compareZ};
 
+    fn lessThanAxis(axis_index: u8, a: *Surface, b: *Surface) bool {
+        const comparator = axis_comparators[axis_index];
+        return comparator.*(a, b);
+    }
+
     fn divide(allocator: *Allocator, random: *Random, surfaces: []*Surface, depth: u32, tracking: *Tracking) anyerror ! *Surface {
         std.debug.assert(surfaces.len > 0);
         tracking.update(depth);
@@ -57,18 +62,17 @@ pub const BVHNode = struct {
             return BVHNode.create(allocator, random, surface, surface);
         }
 
-        const comparator_index = random.intRangeAtMost(u8, 0, 2);
-        const comparator = axis_comparators[comparator_index].*;
+        const axis_index = random.intRangeAtMost(u8, 0, 2);
 
         if (surfaces.len == 2) {
             const surface0 = surfaces[0];
             const surface1 = surfaces[1];
-            if (comparator(surface0, surface0)) {
+            if (lessThanAxis(axis_index, surface0, surface0)) {
                 return BVHNode.create(allocator, random, surface0, surface1);
             }
             return BVHNode.create(allocator, random, surface1, surface0);
         }
-        std.sort.sort(*Surface, surfaces, comparator);
+        std.sort.sort(*Surface, surfaces, axis_index, lessThanAxis);
         const split = surfaces.len / 2;
         const left_surfaces = surfaces[0..split];
         const right_surfaces = surfaces[split..];
