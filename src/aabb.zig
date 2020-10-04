@@ -31,9 +31,8 @@ pub const AABB = struct {
     }
 
     /// Create AABB from list of vertices
-    pub fn initVertexes(vertexes: ArrayList(Vec3)) AABB {
-        // TODO what if there is 0 or 1 vertexes?
-        std.debug.assert(vertexes.items.len > 1);
+    pub fn initVertexes(vertexes: []Vec3) AABB {
+        std.debug.assert(vertexes.len > 1);
         var min_x = math.inf(BaseFloat);
         var min_y = math.inf(BaseFloat);
         var min_z = math.inf(BaseFloat);
@@ -42,7 +41,7 @@ pub const AABB = struct {
         var max_y = -math.inf(BaseFloat);
         var max_z = -math.inf(BaseFloat);
 
-        for (vertexes.items) |*vertex, i| {
+        for (vertexes) |*vertex, i| {
             min_x = math.min(min_x, vertex.x());
             min_y = math.min(min_y, vertex.y());
             min_z = math.min(min_z, vertex.z());
@@ -162,7 +161,7 @@ test "AABB.initVertexes()" {
 
     try list.append(Vec3.init(-2., 0., 9.));
     try list.append(Vec3.init(1., 7., 2.));
-    const box1 = AABB.initVertexes(list);
+    const box1 = AABB.initVertexes(list.items);
     expectEqual(@as(BaseFloat, -2.), box1.min.x());
     expectEqual(@as(BaseFloat, 0.), box1.min.y());
     expectEqual(@as(BaseFloat, 2.), box1.min.z());
@@ -173,7 +172,7 @@ test "AABB.initVertexes()" {
     try list.append(Vec3.init(3., 0., -2.));
     try list.append(Vec3.init(-1., 2., 2.));
     try list.append(Vec3.init(9., -1., 7.));
-    const box2 = AABB.initVertexes(list);
+    const box2 = AABB.initVertexes(list.items);
     expectEqual(@as(BaseFloat, -2.), box2.min.x());
     expectEqual(@as(BaseFloat, -1.), box2.min.y());
     expectEqual(@as(BaseFloat, -2.), box2.min.z());

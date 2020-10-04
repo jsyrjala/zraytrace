@@ -173,7 +173,7 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
     }
     std.debug.warn("Found\n", .{});
     std.debug.warn("  center point:   {}\n", .{Vec3.center(vertexes)});
-    std.debug.warn("  bounding box:   {}\n", .{AABB.initVertexes(vertexes)});
+    std.debug.warn("  bounding box:   {}\n", .{AABB.initVertexes(vertexes.items)});
     std.debug.warn("  vertexes:       {}\n", .{vertexes.items.len});
     std.debug.warn("  vertex normals: {}\n", .{vertex_normals.items.len});
     std.debug.warn("  faces:          {}\n", .{face_count});
