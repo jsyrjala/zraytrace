@@ -34,7 +34,7 @@ pub const Camera = struct {
                         .horizontal = horizontal, .vertical = vertical};
     }
 
-    pub fn format(self: Camera, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+    pub fn format(self: Camera, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         return std.fmt.format(writer, "Camera(Origin({},{},{}),Horizontal({},{},{}),Vertical({},{},{}))",
                             .{self.origin.x(), self.origin.x(), self.origin.x(),
                               self.horizontal.x(), self.horizontal.x(), self.horizontal.x(),

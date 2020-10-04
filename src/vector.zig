@@ -31,7 +31,7 @@ pub const Vec3 = struct {
     }
 
     /// Used when printing struct
-    pub fn format(self: Vec3, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+    pub fn format(self: Vec3, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         return std.fmt.format(writer, "Vec3({},{},{})", .{self._x, self._y, self._z,});
     }
 

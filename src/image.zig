@@ -25,7 +25,7 @@ pub const Color = struct {
         return Color{.r = r, .g = g, .b = b};
     }
 
-    pub fn format(self: Color, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+    pub fn format(self: Color, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         return std.fmt.format(writer, "Color({},{},{})",
                             .{self.r, self.g, self.b});
     }
@@ -93,7 +93,7 @@ pub const Image = struct {
         image.allocator.destroy(image);
     }
 
-    pub fn format(self: Image, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+    pub fn format(self: Image, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         return std.fmt.format(writer, "Image({}x{})",
                             .{self.width, self.height});
     }
