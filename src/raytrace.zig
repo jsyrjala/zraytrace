@@ -226,7 +226,7 @@ test "Render something" {
     const white_metal = Material.initMetal(Metal.init(Color.white));
     const silver_metal = Material.initLambertian(Lambertian.init(random, Color.silver));
 
-    const green_matte = Material.initLambertian(Lambertian.init(random, Color.green));
+    const green_matte = Material.greenMatte(random);
     const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
 
     // TODO this copies the materials with objects
@@ -262,7 +262,7 @@ test "Render Man model" {
     const radius: BaseFloat = 100.0;
     const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
 
-    try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.green_matte(random))));
+    try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.greenMatte(random))));
     for (man_model.items) |surface| {
         try objects.append(surface);
     }

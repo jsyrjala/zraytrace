@@ -16,7 +16,7 @@ pub const Material = union (enum) {
     pub const blue_metal = initMetal(Metal.init(Color.blue));
     pub const green_metal = initMetal(Metal.init(Color.green));
 
-    pub fn green_matte(random: *Random) Material {
+    pub fn greenMatte(random: *Random) Material {
         return initLambertian(Lambertian.init(random, Color.green));
     }
 

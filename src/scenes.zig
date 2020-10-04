@@ -40,7 +40,7 @@ pub fn man_and_ball(allocator: *std.mem.Allocator, render_params: raytrace.Rende
     const radius: BaseFloat = 100.0;
     const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
 
-    try surfaces.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.green_matte(random))));
+    try surfaces.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.greenMatte(random))));
     for (man_model.items) |surface| {
         try surfaces.append(surface);
     }
@@ -68,7 +68,7 @@ pub fn three_balls(allocator: *std.mem.Allocator, render_params: raytrace.Render
     const white_metal = Material.initMetal(Metal.init(Color.white));
     const silver_metal = Material.initLambertian(Lambertian.init(random, Color.silver));
 
-    const green_matte = Material.initLambertian(Lambertian.init(random, Color.green));
+    const green_matte = Material.greenMatte(random);
     const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
 
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), -2.0, gold_metal)));
@@ -91,7 +91,13 @@ pub fn render_scene(allocator: *std.mem.Allocator, render_params: raytrace.Rende
     }
 }
 
-test "man_and_ball" {
-    const render_params = raytrace.RenderParams{.width = 10, .height = 10, .samples_per_pixel = 2, .max_depth = 2};
-    _ = try man_and_ball(render_params);
+test "render scenes in low resolution" {
+    var scene_index: u16 = 0;
+    while (scene_index < 2) : (scene_index += 1) {
+        var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        defer arena.deinit();
+        const allocator = &arena.allocator;
+        const render_params = raytrace.RenderParams{.width = 10, .height = 10, .samples_per_pixel = 2, .max_depth = 2};
+        _ = try render_scene(allocator, render_params, scene_index);
+    }
 }

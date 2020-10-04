@@ -34,19 +34,19 @@ pub const BVHNode = struct {
     right_child: *Surface,
 
     // Comparator functions sort by minimum AABB coordinates
-    fn compare_x(a: *Surface, b: *Surface) bool {
+    fn compareX(a: *Surface, b: *Surface) bool {
         return a.aabb().min.x() < b.aabb().min.x();
     }
 
-    fn compare_y(a: *Surface, b: *Surface) bool {
+    fn compareY(a: *Surface, b: *Surface) bool {
         return a.aabb().min.y() < b.aabb().min.y();
     }
 
-    fn compare_z(a: *Surface, b: *Surface) bool {
+    fn compareZ(a: *Surface, b: *Surface) bool {
         return a.aabb().min.z() < b.aabb().min.z();
     }
 
-    const axis_comparators = [_]* const fn (a: *Surface, b: *Surface) bool{&compare_x, &compare_y, &compare_z};
+    const axis_comparators = [_]* const fn (a: *Surface, b: *Surface) bool{&compareX, &compareY, &compareZ};
 
     fn divide(allocator: *Allocator, random: *Random, surfaces: []*Surface, depth: u32, tracking: *Tracking) anyerror ! *Surface {
         std.debug.assert(surfaces.len > 0);

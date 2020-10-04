@@ -39,14 +39,14 @@ pub const Sphere = struct {
             // handle two halves of quadratic solution
             const t1 = (-half_b - root) / a;
             if (t1 < t_max and t1 > t_min) {
-                const location = ray.ray_at(t1);
+                const location = ray.rayAt(t1);
                 const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
                 return HitRecord.init(ray, location, outward_normal, t1, surface);
             }
             // this should happen only if ray starting point is inside of the sphere?
             const t2 = (-half_b + root) / a;
             if (t2 < t_max and t2 > t_min) {
-                const location = ray.ray_at(t2);
+                const location = ray.rayAt(t2);
                 const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
                 return HitRecord.init(ray, location, outward_normal, t2, surface);
             }
