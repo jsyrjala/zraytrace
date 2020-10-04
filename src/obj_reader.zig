@@ -45,7 +45,7 @@ fn createTri(vertexes: *ArrayList(Vec3), material: *const Material,
         vertexes.items[a_index.vertex - 1],
         vertexes.items[b_index.vertex - 1],
         vertexes.items[c_index.vertex - 1],
-        material.*
+        material
     );
 }
 

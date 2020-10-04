@@ -165,7 +165,7 @@ fn createSurfaces(allocator: *Allocator, random: *Random, count: u16) !ArrayList
         const z: f32 = (random.float(f32) - 0.5) * 100.0;
         const radius: f32 = random.float(f32) * 10 + 0.01;
         const center = Vec3.init(x,y,z);
-        try surfaces.append(try createSphere(allocator, Sphere.init(center, radius, Material.black_metal)));
+        try surfaces.append(try createSphere(allocator, Sphere.init(center, radius, &Material.black_metal)));
     }
     return surfaces;
 }

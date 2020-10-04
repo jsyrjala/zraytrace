@@ -91,7 +91,7 @@ const Sphere = @import("sphere.zig").Sphere;
 
 test "Material.scatter()" {
     const metal = Metal.init(Color.black);
-    const material = Material.initMetal(metal);
+    const material = &Material.initMetal(metal);
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
     const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
@@ -102,14 +102,14 @@ test "Material.scatter()" {
 test "Lambertian.init()" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
-    const material = Lambertian.init(random, Color.black);
+    const material = &Lambertian.init(random, Color.black);
 }
 
 test "Lambertian.scatter()" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
     const lambertian = Lambertian.init(random, Color.black);
-    const material = Material.initLambertian(lambertian);
+    const material = &Material.initLambertian(lambertian);
     const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
@@ -123,7 +123,7 @@ test "Metal.init()" {
 
 test "Metal.scatter()" {
     const metal = Metal.init(Color.black);
-    const material = Material.initMetal(metal);
+    const material = &Material.initMetal(metal);
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
     const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 

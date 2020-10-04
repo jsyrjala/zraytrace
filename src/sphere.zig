@@ -14,13 +14,13 @@ const AABB = @import("aabb.zig").AABB;
 pub const Sphere = struct {
     center: Vec3,
     radius: BaseFloat,
-    material: Material,
+    material: *const Material,
     /// Axis aligned bounding box
     aabb: AABB,
 
     pub const unit_sphere = init(Vec3.origin, 1.0, Material.black_metal);
 
-    pub fn init(center: Vec3, radius: BaseFloat, material: Material) Sphere {
+    pub fn init(center: Vec3, radius: BaseFloat, material: *const Material) Sphere {
         const aabb = AABB.initMinMax(center.minus(Vec3.init(radius, radius, radius)),
                                      center.plus(Vec3.init(radius, radius, radius)));
         return Sphere{.center = center, .radius = radius,
@@ -62,7 +62,7 @@ const expectEqual = std.testing.expectEqual;
 
 test "Sphere.init" {
     const vec = Vec3.init(1.0, 1.0, 1.0);
-    const sphere = Sphere.init(vec, 10.0, Material.black_metal);
+    const sphere = Sphere.init(vec, 10.0, &Material.black_metal);
     const surface = Surface.initSphere(sphere);
     const ray = Ray.init(vec, vec);
     const hit_record = sphere.hit(surface, ray, 0.1, 10000.0);

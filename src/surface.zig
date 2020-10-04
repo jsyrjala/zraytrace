@@ -37,7 +37,7 @@ pub const Surface = union (enum) {
     }
 
     // one way to do polymorphism
-    pub inline fn material(surface: Surface) Material {
+    pub inline fn material(surface: Surface) *const Material {
         switch (surface) {
             Surface.sphere => |obj| return obj.material,
             Surface.triangle => |obj| return obj.material,
@@ -70,9 +70,9 @@ test "Surface.hit()" {
     defer arena.deinit();
     const allocator = &arena.allocator;
 
-    const sphere = Sphere.init(Vec3.z_unit, 0.1, Material.black_metal);
+    const sphere = Sphere.init(Vec3.z_unit, 0.1, &Material.black_metal);
     const s = Surface.initSphere(sphere);
-    const triangle = Triangle.init(Vec3.x_unit, Vec3.z_unit, Vec3.y_unit, Material.black_metal);
+    const triangle = Triangle.init(Vec3.x_unit, Vec3.z_unit, Vec3.y_unit, &Material.black_metal);
     const t = Surface.initTriangle(triangle);
     const ray = Ray.init(Vec3.origin, Vec3.x_unit);
 

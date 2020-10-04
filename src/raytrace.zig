@@ -212,21 +212,14 @@ test "Render something" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
 
-    const black_metal = Material.initMetal(Metal.init(Color.black));
     const gold_metal = Material.initMetal(Metal.init(Color.gold));
-    const red_metal = Material.initMetal(Metal.init(Color.red));
-    const green_metal = Material.initMetal(Metal.init(Color.green));
-    const blue_metal = Material.initMetal(Metal.init(Color.blue));
-    const white_metal = Material.initMetal(Metal.init(Color.white));
-    const silver_metal = Material.initLambertian(Lambertian.init(random, Color.silver));
-
     const green_matte = Material.greenMatte(random);
     const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
 
     // TODO this copies the materials with objects
-    try objects.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), 2.0, gold_metal)));
-    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, purple_matte)));
-    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, green_matte)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), 2.0, &gold_metal)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, &purple_matte)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, &green_matte)));
 
     const render_params = RenderParams{.width = 20, .height = 20, .samples_per_pixel = 5, .max_depth = 5,
                                         .bounded_volume_hierarchy = false};
@@ -256,7 +249,7 @@ test "Render Man model" {
     const radius: BaseFloat = 100.0;
     const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
 
-    try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.greenMatte(random))));
+    try objects.append(Surface.initSphere(Sphere.init(earth_center, radius, &Material.greenMatte(random))));
     for (man_model.items) |surface| {
         try objects.append(surface);
     }

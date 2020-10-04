@@ -40,7 +40,7 @@ pub fn man_and_ball(allocator: *std.mem.Allocator, render_params: raytrace.Rende
     const radius: BaseFloat = 100.0;
     const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
 
-    try surfaces.append(Surface.initSphere(Sphere.init(earth_center, radius, Material.greenMatte(random))));
+    try surfaces.append(Surface.initSphere(Sphere.init(earth_center, radius, &Material.greenMatte(random))));
     for (man_model.items) |surface| {
         try surfaces.append(surface);
     }
@@ -60,20 +60,14 @@ pub fn three_balls(allocator: *std.mem.Allocator, render_params: raytrace.Render
     var surfaces = ArrayList(Surface).init(tmp_allocator);
     defer surfaces.deinit();
 
-    const black_metal = Material.initMetal(Metal.init(Color.black));
-    const gold_metal = Material.initMetal(Metal.init(Color.gold));
-    const red_metal = Material.initMetal(Metal.init(Color.red));
-    const green_metal = Material.initMetal(Metal.init(Color.green));
-    const blue_metal = Material.initMetal(Metal.init(Color.blue));
-    const white_metal = Material.initMetal(Metal.init(Color.white));
-    const silver_metal = Material.initLambertian(Lambertian.init(random, Color.silver));
 
+    const gold_metal = Material.initMetal(Metal.init(Color.gold));
     const green_matte = Material.greenMatte(random);
     const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
 
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), -2.0, gold_metal)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.0, purple_matte)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1., -102.5, 4.0), 100.0, green_matte)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), -2.0, &gold_metal)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.0, &purple_matte)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1., -102.5, 4.0), 100.0, &green_matte)));
 
     const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     return try raytrace.render(allocator, random, camera, surfaces, render_params);
@@ -91,6 +85,7 @@ pub fn render_scene(allocator: *std.mem.Allocator, render_params: raytrace.Rende
     }
 }
 
+//// Testing
 test "render scenes in low resolution" {
     var scene_index: u16 = 0;
     while (scene_index < 2) : (scene_index += 1) {
@@ -100,4 +95,14 @@ test "render scenes in low resolution" {
         const render_params = raytrace.RenderParams{.width = 10, .height = 10, .samples_per_pixel = 2, .max_depth = 2};
         _ = try render_scene(allocator, render_params, scene_index);
     }
+}
+
+test "material allocation" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = &arena.allocator;
+
+    var m = try allocator.create(Material);
+    m.* = Material.black_metal;
+    _ = Sphere.init(Vec3.origin, 1.0, m);
 }

@@ -24,11 +24,11 @@ pub const Triangle = struct {
     face_normal: Vec3,
     /// Face normal in unit length
     face_unit_normal: Vec3,
-    material: Material,
+    material: *const Material,
     /// Axis aligned bounding box
     aabb: AABB,
 
-    pub fn init(a: Vec3, b: Vec3, c: Vec3, material: Material) Triangle {
+    pub fn init(a: Vec3, b: Vec3, c: Vec3, material: *const Material) Triangle {
         const aabb = AABB.initAabb(AABB.initMinMax(a,b), AABB.initMinMax(a,c));
         const e1 = b.minus(a);
         const e2 = c.minus(a);
@@ -75,14 +75,14 @@ test "Triangle.init()" {
     const a = Vec3.init(1.0, 0.0, 0.0);
     const b = Vec3.init(0.0, 1.0, 0.0);
     const c = Vec3.init(0.0, 0.0, 1.0);
-    const triangle = Triangle.init(a, b, c, Material.black_metal);
+    const triangle = Triangle.init(a, b, c, &Material.black_metal);
 }
 
 test "Triangle.hit() ray doesn't hit the triangle" {
     const a = Vec3.init(1.0, 0.0, 0.0);
     const b = Vec3.init(0.0, 1.0, 0.0);
     const c = Vec3.init(0.0, 0.0, 1.0);
-    const triangle = Triangle.init(a, b, c, Material.black_metal);
+    const triangle = Triangle.init(a, b, c, &Material.black_metal);
     const surface = Surface.initTriangle(triangle);
     const vec = Vec3.init(1.0, 1.0, 1.0);
     const ray = Ray.init(vec, vec);
@@ -96,7 +96,7 @@ test "Triangle.hit() ray hits the triangle" {
     const a = Vec3.init(10., 5., 1.0);
     const b = Vec3.init(-10.0, -10.0, 1.0);
     const c = Vec3.init(-10.0, 10.0, 1.0);
-    const triangle = Triangle.init(a, b, c, Material.black_metal);
+    const triangle = Triangle.init(a, b, c, &Material.black_metal);
     const surface = Surface.initTriangle(triangle);
 
     const origin = Vec3.init(0.0, 0.0, -10.0);
