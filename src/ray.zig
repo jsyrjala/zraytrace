@@ -14,6 +14,12 @@ pub const Ray = struct {
     pub inline fn rayAt(ray: Ray, t: BaseFloat) Vec3 {
         return ray.origin.plus(ray.direction.scale(t));
     }
+
+    pub fn format(self: Ray, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+        return std.fmt.format(writer, "Ray(Origin({},{},{}),Direction({},{},{}))",
+                            .{self.origin.x(), self.origin.y(), self.origin.z(),
+                              self.direction.x(), self.direction.y(), self.direction.z(),});
+    }
 };
 
 //// Testing

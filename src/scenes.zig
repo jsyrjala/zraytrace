@@ -96,13 +96,3 @@ test "render scenes in low resolution" {
         _ = try render_scene(allocator, render_params, scene_index);
     }
 }
-
-test "material allocation" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = &arena.allocator;
-
-    var m = try allocator.create(Material);
-    m.* = Material.black_metal;
-    _ = Sphere.init(Vec3.origin, 1.0, m);
-}

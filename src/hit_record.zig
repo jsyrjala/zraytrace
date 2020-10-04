@@ -21,6 +21,7 @@ pub const HitRecord = struct {
     front_face: bool,
     /// Pointer to object that collided
     surface: Surface,
+
     pub fn init(ray: Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: Surface) HitRecord {
         if (ray.direction.dot(outward_normal) > 0.0) {
             return HitRecord{.location = location,
@@ -32,6 +33,13 @@ pub const HitRecord = struct {
                             .normal = outward_normal,
                             .t = t, .front_face = true,
                             .surface = surface};
+    }
+
+    pub fn format(self: HitRecord, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+        return std.fmt.format(writer, "HitRecord(Location({},{},{}),Normal({},{},{}),t={},front_face={})",
+                            .{self.location.x(), self.location.y(), location.z(),
+                              self.normal.x(), self.normal.y(), normal.z(),
+                              self.t, self.front_face});
     }
 };
 

@@ -34,6 +34,13 @@ pub const Camera = struct {
                         .horizontal = horizontal, .vertical = vertical};
     }
 
+    pub fn format(self: Camera, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+        return std.fmt.format(writer, "Camera(Origin({},{},{}),Horizontal({},{},{}),Vertical({},{},{}))",
+                            .{self.origin.x(), self.origin.x(), self.origin.x(),
+                              self.horizontal.x(), self.horizontal.x(), self.horizontal.x(),
+                              self.vertical.x(), self.vertical.x(), self.vertical.x(),});
+    }
+
     pub fn getRay(camera: Camera, u: BaseFloat, v: BaseFloat) Ray {
         const dir = camera.lower_left_corner
                     .plus(camera.horizontal.scale(u))

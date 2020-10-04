@@ -25,6 +25,11 @@ pub const Color = struct {
         return Color{.r = r, .g = g, .b = b};
     }
 
+    pub fn format(self: Color, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+        return std.fmt.format(writer, "Color({},{},{})",
+                            .{self.r, self.g, self.b});
+    }
+
     pub inline fn elem(v: Color, index: u8) f32 {
         switch (index) {
             0 => return v.r,
@@ -86,6 +91,11 @@ pub const Image = struct {
     pub fn deinit(image: *const Image) void {
         image.allocator.free(image.pixels);
         image.allocator.destroy(image);
+    }
+
+    pub fn format(self: Image, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+        return std.fmt.format(writer, "Image({}x{})",
+                            .{self.width, self.height});
     }
 };
 

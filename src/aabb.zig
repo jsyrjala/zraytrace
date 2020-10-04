@@ -66,6 +66,13 @@ pub const AABB = struct {
         return math.fabs(diff.x()) * math.fabs(diff.y()) * math.fabs(diff.z());
     }
 
+    /// Used when printing struct
+    pub fn format(self: AABB, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: var) !void {
+        return std.fmt.format(writer, "AABB(Min({},{},{}),Max({},{},{}))",
+                            .{self.min.x(), self.min.y(), self.min.z(),
+                              self.max.x(), self.max.y(), self.max.z(),});
+    }
+
     pub fn surfaceArea(box: AABB) BaseFloat {
         const diff = box.min.minus(box.max);
         const d_x = math.fabs(diff.x());
