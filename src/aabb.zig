@@ -60,7 +60,7 @@ pub const AABB = struct {
                                maximumVec(box1.max, box2.max));
     }
 
-    // Volume of AABB
+    /// Volume of AABB
     pub fn volume(box: AABB) BaseFloat {
         const diff = box.min.minus(box.max);
         return math.fabs(diff.x()) * math.fabs(diff.y()) * math.fabs(diff.z());
@@ -73,6 +73,7 @@ pub const AABB = struct {
                               self.max.x(), self.max.y(), self.max.z(),});
     }
 
+    /// Surface area oof AABB
     pub fn surfaceArea(box: AABB) BaseFloat {
         const diff = box.min.minus(box.max);
         const d_x = math.fabs(diff.x());

@@ -11,11 +11,12 @@ pub fn build(b: *Builder) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
-    // const exe = b.addExecutable("first", "src/main.zig");
     const exe = b.addExecutable("raytrace", "src/main.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.linkLibC();
+    // exe.addIncludeDir("/usr/local/include");
+    exe.linkSystemLibrary("png");
     exe.install();
 
     const run_cmd = exe.run();
