@@ -32,7 +32,7 @@ pub const Vec3 = struct {
 
     /// Used when printing struct
     pub fn format(self: Vec3, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-        return std.fmt.format(writer, "Vec3({},{},{})", .{self._x, self._y, self._z,});
+        return std.fmt.format(writer, "Vec3({d:0.3},{d:0.3},{d:0.3})", .{self._x, self._y, self._z,});
     }
 
     pub inline fn x(v: Vec3) BaseFloat {
@@ -47,7 +47,7 @@ pub const Vec3 = struct {
         return v._z;
     }
 
-    pub fn init(_x: BaseFloat, _y: BaseFloat, _z: BaseFloat) Vec3 {
+    pub inline fn init(_x: BaseFloat, _y: BaseFloat, _z: BaseFloat) Vec3 {
         return Vec3{._x = _x, ._y = _y, ._z = _z};
     }
 

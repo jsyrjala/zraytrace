@@ -37,7 +37,7 @@ fn print_progress(scanline: u64, total_scanlines: u64, progress: *Progress, prog
     const pixel_change = progress.pixels_processed - progress_prev.pixels_processed;
     const time_diff = @intToFloat(f32, std.time.milliTimestamp() - progress.scanline_start_time) / 1000.;
     const pixels_per_second = @intToFloat(f32, pixel_change) / time_diff;
-    std.debug.warn("Scanline: {}/{} Pixels: {} Samples: {} Rays: {} Recursion limit: {} Reflections: {} Background hits: {} Pixels/s: {:0.2}\n",
+    std.debug.warn("Scanline: {}/{} Pixels: {} Samples: {} Rays: {} Recursion limit: {} Reflections: {} Background hits: {} Pixels/s: {d:0.1}\n",
                    .{
                        scanline, total_scanlines,
                        progress.pixels_processed, progress.samples_processed, progress.rays_processed,
@@ -187,8 +187,8 @@ pub fn render(allocator: *Allocator, random: *Random,
     std.debug.warn("  Total samples:         {}\n", .{progress.samples_processed});
     std.debug.warn("  Total rays:            {}\n", .{progress.rays_processed});
     std.debug.warn("  Total reflections:     {}\n", .{progress.reflections});
-    std.debug.warn("  Pixels per second:     {:0.2} pixels/s\n", .{@intToFloat(f32, progress.pixels_processed) / runtime});
-    std.debug.warn("  Total runtime:         {:0.2} seconds\n", .{runtime});
+    std.debug.warn("  Pixels per second:     {d:0.2} pixels/s\n", .{@intToFloat(f32, progress.pixels_processed) / runtime});
+    std.debug.warn("  Total runtime:         {d:0.2} seconds\n", .{runtime});
     return image;
 }
 
