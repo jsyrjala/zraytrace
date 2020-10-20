@@ -104,7 +104,7 @@ pub const RenderParams = struct {
 };
 
 // TODO use ArrayList(*Surface) everywhere (or SurfaceList)
-fn bounded_volume_hierarchy(allocator: *Allocator, random: *Random, surfaces: ArrayList(Surface)) ! ArrayList(Surface) {
+fn boundedVolumeHierarchy(allocator: *Allocator, random: *Random, surfaces: ArrayList(Surface)) ! ArrayList(Surface) {
     var surface_pointers = ArrayList(*Surface).init(allocator);
     defer surface_pointers.deinit();
     for (surfaces.items) |*surface| {
@@ -117,11 +117,11 @@ fn bounded_volume_hierarchy(allocator: *Allocator, random: *Random, surfaces: Ar
 }
 
 // TODO make a SurfaceList abstraction
-fn preprocess_sufraces(allocator: *Allocator, random: *Random,
+fn preprocessSufraces(allocator: *Allocator, random: *Random,
                         surfaces: ArrayList(Surface), render_params: RenderParams) ! ArrayList(Surface) {
     if (render_params.bounded_volume_hierarchy) {
         std.debug.warn("Using Bounded Volume Hierarchy\n", .{});
-        return bounded_volume_hierarchy(allocator, random, surfaces);
+        return boundedVolumeHierarchy(allocator, random, surfaces);
     }
     std.debug.warn("Using surface list\n", .{});
     return surfaces;
@@ -142,7 +142,7 @@ pub fn render(allocator: *Allocator, random: *Random,
     std.debug.warn(" - Recursion depth:          {}\n", .{render_params.max_depth});
     std.debug.warn(" - Bounded volume hierarchy: {}\n", .{render_params.bounded_volume_hierarchy});
 
-    const processed_surfaces = try preprocess_sufraces(allocator, random, surfaces, render_params);
+    const processed_surfaces = try preprocessSufraces(allocator, random, surfaces, render_params);
 
     var image = try Image.init(allocator, render_params.width, render_params.height);
 
