@@ -163,8 +163,8 @@ pub const Vec3 = struct {
         return unreachable;
     }
 
-    // Generate a random uniformly distributed unit vector.
-    pub inline fn randomUnitVector(random: *Random) Vec3 {
+    /// Generate a random uniformly distributed unit vector.
+    pub inline fn randomUnitVector_old(random: *Random) Vec3 {
         while (true) {
             const p = randomVectorInUnitSphere(random);
             const unit_p = Vec3.unitVector(p);
@@ -174,6 +174,23 @@ pub const Vec3 = struct {
             }
             return unit_p;
         }
+    }
+
+    /// http://www.rorydriscoll.com/2009/01/07/better-sampling/
+    pub inline fn randomHemisphere(random: *Random) Vec3 {
+        const r1: BaseFloat = random.float(BaseFloat);
+        const r2: BaseFloat = random.float(BaseFloat);
+        const r = math.sqrt(@as(BaseFloat, 1.0) - r1 * r1);
+        const phi = 2. *  math.pi * r2;
+        return Vec3.init(math.cos(phi) * r, math.sin(phi) * r, r1);
+    }
+
+    pub inline fn randomUnitVector(random: *Random) Vec3 {
+        const v = randomHemisphere(random);
+        if (random.boolean()) {
+            return v;
+        }
+        return Vec3.init(v._x, v._y, v._z * -1.0);
     }
 };
 
@@ -296,14 +313,51 @@ test "Vec3.randomInUnitSphere()" {
     expect(Vec3.length(vector) < 1.0);
 }
 
-test "Vec3.randomUnitVector()" {
+test "Vec3.randomUnitVector_old()" {
     var prng = DefaultPrng.init(0);
     const random = &prng.random;
-    const vector = Vec3.randomUnitVector(random);
+    const vector = Vec3.randomUnitVector_old(random);
     const expected = Vec3.init(0.2167, 0.9746, -0.0562);
     expect(math.absFloat(expected.x() - vector.x()) < 0.01);
     expect(math.absFloat(expected.y() - vector.y()) < 0.01);
     expect(math.absFloat(expected.z() - vector.z()) < 0.01);
     expect(Vec3.length(vector) < 1.01);
     expect(Vec3.length(vector) > 0.99);
+}
+
+test "Vec3.randomUnitVector()" {
+    var prng = DefaultPrng.init(0);
+    const random = &prng.random;
+    const vector = Vec3.randomUnitVector(random);
+    const expected = Vec3.init(-0.344, -0.932, 0.113);
+    expect(math.absFloat(expected.x() - vector.x()) < 0.01);
+    expect(math.absFloat(expected.y() - vector.y()) < 0.01);
+    expect(math.absFloat(expected.z() - vector.z()) < 0.01);
+    expect(Vec3.length(vector) < 1.01);
+    expect(Vec3.length(vector) > 0.99);
+}
+
+
+test "perf randomSphere()" {
+    var prng = DefaultPrng.init(0);
+    const random = &prng.random;
+    const start1 = std.time.milliTimestamp();
+    var i: u64 = 0;
+    while (i < 10) : (i += 1) {
+        var a = Vec3.randomUnitVector(random);
+        // std.debug.warn("  {} {}\n", .{a, a.length()});
+    }
+    std.debug.warn("Took {} ms\n", .{std.time.milliTimestamp() - start1});
+}
+
+test "perf randomUnitVector()" {
+    var prng = DefaultPrng.init(0);
+    const random = &prng.random;
+    const start1 = std.time.milliTimestamp();
+    var i: u64 = 0;
+    while (i < 10) : (i += 1) {
+        var a = Vec3.randomUnitVector_old(random);
+        // std.debug.warn("  {} {}\n", .{a, a.length()});
+    }
+    std.debug.warn("Took {} ms\n", .{std.time.milliTimestamp() - start1});
 }

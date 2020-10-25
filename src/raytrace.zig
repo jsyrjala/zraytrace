@@ -33,7 +33,7 @@ const Progress = struct {
 };
 
 /// Print progress to stdout
-fn print_progress(scanline: u64, total_scanlines: u64, progress: *Progress, progress_prev: *Progress) void {
+fn printProgress(scanline: u64, total_scanlines: u64, progress: *Progress, progress_prev: *Progress) void {
     const pixel_change = progress.pixels_processed - progress_prev.pixels_processed;
     const time_diff = @intToFloat(f32, std.time.milliTimestamp() - progress.scanline_start_time) / 1000.;
     const pixels_per_second = @intToFloat(f32, pixel_change) / time_diff;
@@ -57,6 +57,7 @@ inline fn backgroundColor(ray: Ray) Color {
 }
 
 fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32, progress: *Progress) Color {
+    // TODO use russian roulette to conditionally to continue
     if (depth <= 0) {
         // ray has been reflecting many times before hitting anything
         progress.recursion_depth_hits += 1;
@@ -175,7 +176,7 @@ pub fn render(allocator: *Allocator, random: *Random,
             progress.pixels_processed += 1;
             image.pixels[image_offset] = color_acc.scale(color_scale);
         }
-        print_progress(y + 1, render_params.height, &progress, &progress_prev);
+        printProgress(y + 1, render_params.height, &progress, &progress_prev);
         progress_prev = progress;
         progress.scanline_start_time = std.time.milliTimestamp();
     }
