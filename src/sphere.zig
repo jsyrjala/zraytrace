@@ -27,31 +27,31 @@ pub const Sphere = struct {
                       .material = material, .aabb = aabb};
     }
 
-    pub fn hit(sphere: Sphere, surface: Surface, ray:Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
+    pub fn hit(sphere: Sphere, surface: Surface, ray: Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
         const oc = ray.origin.minus(sphere.center);
-        const a = ray.direction.lengthSquared();
         const half_b = oc.dot(ray.direction);
         const c = oc.lengthSquared() - (sphere.radius * sphere.radius);
-        const discriminant = half_b*half_b - a*c;
-
-        if (discriminant > 0) {
-            const root = math.sqrt(discriminant);
-            // handle two halves of quadratic solution
-            const t1 = (-half_b - root) / a;
-            if (t1 < t_max and t1 > t_min) {
-                const location = ray.rayAt(t1);
-                const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-                return HitRecord.init(ray, location, outward_normal, t1, surface);
-            }
-            // this should happen only if ray starting point is inside of the sphere?
-            const t2 = (-half_b + root) / a;
-            if (t2 < t_max and t2 > t_min) {
-                const location = ray.rayAt(t2);
-                const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-                return HitRecord.init(ray, location, outward_normal, t2, surface);
-            }
+        const discriminant = half_b*half_b - c;
+        if (discriminant < 0) {
+            // the ray did not hit the sphere
+            return null;
         }
-        // the ray did not hit the sphere
+        const root = math.sqrt(discriminant);
+        // handle two halves of quadratic solution
+        const t1 = -half_b - root;
+        if (t1 < t_max and t1 > t_min) {
+            const location = ray.rayAt(t1);
+            const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
+            return HitRecord.init(ray, location, outward_normal, t1, surface);
+        }
+        // this should happen only if ray starting point is inside of the sphere?
+        const t2 = -half_b + root;
+        if (t2 < t_max and t2 > t_min) {
+            const location = ray.rayAt(t2);
+            const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
+            return HitRecord.init(ray, location, outward_normal, t2, surface);
+        }
+        // no hit inside t_min/t_max
         return null;
     }
 };

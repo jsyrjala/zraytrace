@@ -9,7 +9,7 @@ pub const Ray = struct {
     direction: Vec3,
 
     pub inline fn init(origin: Vec3, direction: Vec3) Ray {
-        return Ray{.origin = origin, .direction = direction};
+        return Ray{.origin = origin, .direction = direction.unitVector()};
     }
     pub inline fn rayAt(ray: Ray, t: BaseFloat) Vec3 {
         return ray.origin.plus(ray.direction.scale(t));
