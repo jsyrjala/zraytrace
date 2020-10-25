@@ -13,8 +13,8 @@ const AABB = @import("aabb.zig").AABB;
 
 const FaceVertex = struct {
     vertex: u64,
-    texture: u64,
-    vertex_normal: u64,
+    texture: ?u64,
+    vertex_normal: ?u64,
 };
 
 /// Parse face vertex to components: vertex, texture coordinate, vertex normal
@@ -24,11 +24,21 @@ fn parseFaceVertex(line: []const u8) ! FaceVertex {
     // 1/1/1 2/2/2 3/3/3 => vertex index/texture coordinate index/vertex normal index
     // 1//1 2//2 3//3 => vertex index//vertex normal index
     // faces refer to vertex indexes
-    // assumes that every vertex has all three indexes
     var splitter = std.mem.tokenize(line, "/");
+    
     const v: u64 = try std.fmt.parseInt(u64, splitter.next() orelse "", 10);
-    const t: u64 = try std.fmt.parseInt(u64, splitter.next() orelse "", 10);
-    const vn: u64 = try std.fmt.parseInt(u64, splitter.next() orelse "", 10);
+    const texture_index = splitter.next();
+    if (texture_index == null or texture_index.?.len == 0) {
+        return FaceVertex{.vertex = v, .texture = null, .vertex_normal = null};
+    }
+    const t: u64 = try std.fmt.parseInt(u64, texture_index.?, 10);
+
+    const vertex_normal_index = splitter.next();
+    if (vertex_normal_index == null) {
+        return FaceVertex{.vertex = v, .texture = t, .vertex_normal = null};
+    }
+
+    const vn: u64 = try std.fmt.parseInt(u64, vertex_normal_index.?, 10);
     return FaceVertex{.vertex = v, .texture = t, .vertex_normal = vn};
 }
 
@@ -133,7 +143,12 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
         };
         if (line.len < 1) {
             continue;
-        } else if (line[0] == 'v' and line[1] == ' ') {
+        } 
+        if (line[line.len - 1] == 0x0d) {
+            // remove possible carriage return
+            line = line[0..line.len - 1];
+        }
+        if (line[0] == 'v' and line[1] == ' ') {
             var splitter = std.mem.tokenize(line, " ");
             // eat "v" from the start
             _ = splitter.next();
@@ -183,11 +198,29 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
 }
 
 //// Testing
-test "read_obj_file" {
+test "read_obj_file Man.obj" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = &arena.allocator;
 
     const filename = "./models/man/Man.obj";
+    const surfaces = try readObjFile(allocator, filename, &Material.silver_metal);
+}
+
+test "read_obj_file bunny.obj" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = &arena.allocator;
+
+    const filename = "./models/bunny/bunny.obj";
+    const surfaces = try readObjFile(allocator, filename, &Material.silver_metal);
+}
+
+test "read_obj_file teapot.obj" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = &arena.allocator;
+
+    const filename = "./models/teapot/teapot.obj";
     const surfaces = try readObjFile(allocator, filename, &Material.silver_metal);
 }

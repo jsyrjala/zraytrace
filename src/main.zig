@@ -29,7 +29,7 @@ pub fn main() ! void {
 
     const render_params = RenderParams{.width = width, .height = height,
                                         .samples_per_pixel = samples, .max_depth = max_depth,
-                                        .bounded_volume_hierarchy = false};
+                                        .bounded_volume_hierarchy = true};
     const scene_image = try scenes.render_scene(alloc, render_params, scene_index);
     defer scene_image.deinit();
     const foo = ppm_image.writeFile(filename, scene_image);
