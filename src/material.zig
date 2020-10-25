@@ -5,6 +5,7 @@ const Color = @import("image.zig").Color;
 const Ray = @import("ray.zig").Ray;
 const vector = @import("vector.zig");
 const Vec3 = vector.Vec3;
+const Sample = @import("Sample.zig").Sample;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Surface = @import("surface.zig").Surface;
 
@@ -60,7 +61,7 @@ pub const Lambertian = struct {
 
     pub inline fn scatter(material: Lambertian, ray: Ray, hit_record: HitRecord) ?Scattering {
         const scatter_direction = hit_record.normal
-                                    .plus(Vec3.randomUnitVector(material.random));
+                                    .plus(Sample.randomUnitVector(material.random));
         const scattered = Ray.init(hit_record.location, scatter_direction);
         return Scattering.init(scattered, material.albedo);
     }
