@@ -25,7 +25,7 @@ pub const Surface = union (enum) {
     }
 
     /// Find the right surface type and call it's hit method
-    pub inline fn hit(surface: Surface, ray: Ray, t_min: f32, t_max: f32) ?HitRecord {
+    pub inline fn hit(surface: Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
         const enum_fields = comptime std.meta.fields(@TagType(Surface));
         inline for (std.meta.fields(Surface)) |field, i| {
             if (@enumToInt(surface) == enum_fields[i].value) {

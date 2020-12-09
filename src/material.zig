@@ -31,7 +31,7 @@ pub const Material = union (enum) {
         return Material{.lambertian = lambertian};
     }
     /// Find the right material type and call it's scatter method
-    pub inline fn scatter(material: Material, ray: Ray, hit_record: HitRecord) ?Scattering {
+    pub inline fn scatter(material: Material, ray: *const Ray, hit_record: HitRecord) ?Scattering {
         const enum_fields = comptime std.meta.fields(@TagType(Material));
         inline for (std.meta.fields(Material)) |field, i| {
             if (@enumToInt(material) == enum_fields[i].value) {
@@ -59,7 +59,7 @@ pub const Lambertian = struct {
         return .{.random = random, .albedo = color};
     }
 
-    pub inline fn scatter(material: Lambertian, ray: Ray, hit_record: HitRecord) ?Scattering {
+    pub inline fn scatter(material: Lambertian, ray: *const Ray, hit_record: HitRecord) ?Scattering {
         const scatter_direction = hit_record.normal
                                     .plus(Sample.randomUnitVector(material.random));
         const scattered = Ray.init(hit_record.location, scatter_direction);
@@ -74,7 +74,7 @@ pub const Metal = struct {
         return .{.albedo = color};
     }
 
-    pub inline fn scatter(material: Metal, ray: Ray, hit_record: HitRecord) ?Scattering {
+    pub inline fn scatter(material: Metal, ray: *const Ray, hit_record: HitRecord) ?Scattering {
         const reflected = ray.direction.unitVector().reflect(hit_record.normal);
         const scattered = Ray.init(hit_record.location, reflected);
         const produce_ray = scattered.direction.dot(hit_record.normal) > 0;

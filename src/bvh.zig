@@ -113,7 +113,7 @@ pub const BVHNode = struct {
         return root_bvh_node;
     }
 
-    pub fn hit(node: BVHNode, surface: Surface, ray: Ray, t_min: f32, t_max: f32) ?HitRecord {
+    pub fn hit(node: BVHNode, surface: Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
         if (!node.aabb.hitAabb(ray, t_min, t_max)) {
             // no hit on bounding box, can't hit anything inside the bounding box
             return null;

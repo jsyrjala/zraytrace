@@ -49,14 +49,14 @@ fn printProgress(scanline: u64, total_scanlines: u64, progress: *Progress, progr
 }
 
 /// Background color for rays that do not hit anything
-inline fn backgroundColor(ray: Ray) Color {
+inline fn backgroundColor(ray: *const Ray) Color {
     const unit_direction = ray.direction.unitVector();
     const t = 0.5 * (unit_direction.y() + 1.0);
     return Color.white.scale(1.0-t)
             .add(Color.init(0.5, 0.7, 1.0).scale(t));
 }
 
-fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32, progress: *Progress) Color {
+fn rayColor(ray: *const Ray, surfaces: ArrayList(Surface), depth: u32, progress: *Progress) Color {
     // TODO use russian roulette to conditionally to continue
     if (depth <= 0) {
         // ray has been reflecting many times before hitting anything
@@ -93,7 +93,7 @@ fn rayColor(ray: Ray, surfaces: ArrayList(Surface), depth: u32, progress: *Progr
 
     const scattering = potential_scattering.?;
     // material reflected the ray
-    return scattering.attenuation.multiply(rayColor(scattering.scattered_ray, surfaces, depth - 1, progress));
+    return scattering.attenuation.multiply(rayColor(&scattering.scattered_ray, surfaces, depth - 1, progress));
 }
 
 pub const RenderParams = struct {
@@ -168,7 +168,7 @@ pub fn render(allocator: *Allocator, random: *Random,
                 const u = (@intToFloat(BaseFloat, x) + random.float(BaseFloat) - 0.5) / f_width;
                 const v = (f_y + random.float(BaseFloat) - 0.5) / f_height;
                 const ray = camera.getRay(u, v);
-                const color = rayColor(ray, processed_surfaces, render_params.max_depth, &progress);
+                const color = rayColor(&ray, processed_surfaces, render_params.max_depth, &progress);
                 color_acc.addMutate(color);
                 progress.samples_processed += 1;
             }

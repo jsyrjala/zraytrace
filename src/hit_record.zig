@@ -22,7 +22,7 @@ pub const HitRecord = struct {
     /// Pointer to object that collided
     surface: Surface,
 
-    pub fn init(ray: Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: Surface) HitRecord {
+    pub fn init(ray: *const Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: Surface) HitRecord {
         if (ray.direction.dot(outward_normal) > 0.0) {
             return HitRecord{.location = location,
                             .normal = outward_normal.negate(),
