@@ -21,11 +21,11 @@ pub const HitRecord = struct {
     /// True if ray hit front side of the surface
     front_face: bool,
     /// Pointer to object that collided
-    surface: Surface,
+    surface: *Surface,
     /// Texture coordinates
-    texture_coords: Vec2 = Vec2.init(0.0, 0.0),
+    texture_coords: Vec2,
     
-    pub fn init(ray: *const Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: Surface, texture_coords: Vec2) HitRecord {
+    pub fn init(ray: *const Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: *Surface, texture_coords: Vec2) HitRecord {
         if (ray.direction.dot(outward_normal) > 0.0) {
             return HitRecord{.location = location,
                             .normal = outward_normal.negate(),

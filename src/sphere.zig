@@ -28,7 +28,7 @@ pub const Sphere = struct {
                       .material = material, .aabb = aabb};
     }
 
-    pub fn hit(sphere: Sphere, surface: Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
+    pub fn hit(sphere: Sphere, surface: *Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
         const oc = ray.origin.minus(sphere.center);
         const half_b = oc.dot(ray.direction);
         const c = oc.lengthSquared() - (sphere.radius * sphere.radius);
@@ -43,7 +43,7 @@ pub const Sphere = struct {
         if (t1 < t_max and t1 > t_min) {
             const location = ray.rayAt(t1);
             const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-            // TODO texture coordinates
+            // calculate texture coordinates
             const theta = std.math.acos(-outward_normal.y());
             const phi = std.math.atan2(BaseFloat, - outward_normal.z(), - outward_normal.x()) + std.math.pi;
             const u = phi / (2 * std.math.pi);
@@ -57,7 +57,7 @@ pub const Sphere = struct {
         if (t2 < t_max and t2 > t_min) {
             const location = ray.rayAt(t2);
             const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-            // TODO texture coordinates
+            // calculate texture coordinates
             const theta = std.math.acos(-outward_normal.y());
             const phi = std.math.atan2(BaseFloat, - outward_normal.z(), - outward_normal.x()) + std.math.pi;
             const u = phi / (2 * std.math.pi);

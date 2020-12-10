@@ -25,11 +25,11 @@ pub const Surface = union (enum) {
     }
 
     /// Find the right surface type and call it's hit method
-    pub inline fn hit(surface: Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
+    pub inline fn hit(surface: *Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
         const enum_fields = comptime std.meta.fields(@TagType(Surface));
         inline for (std.meta.fields(Surface)) |field, i| {
-            if (@enumToInt(surface) == enum_fields[i].value) {
-                return @field(surface, field.name).hit(surface, ray, t_min, t_max);
+            if (@enumToInt(surface.*) == enum_fields[i].value) {
+                return @field(surface.*, field.name).hit(surface, ray, t_min, t_max);
             }
         }
         std.debug.warn("Surface.hit() unreachable.", .{});
@@ -37,8 +37,8 @@ pub const Surface = union (enum) {
     }
 
     // one way to do polymorphism
-    pub inline fn material(surface: Surface) *const Material {
-        switch (surface) {
+    pub inline fn material(surface: *Surface) *const Material {
+        switch (surface.*) {
             Surface.sphere => |obj| return obj.material,
             Surface.triangle => |obj| return obj.material,
             // no material for bvh node
@@ -49,11 +49,11 @@ pub const Surface = union (enum) {
     }
 
     // other way to do polymorphism, code should be about identical in this and above
-    pub inline fn aabb(surface: Surface) AABB {
+    pub inline fn aabb(surface: *Surface) AABB {
         const enum_fields = comptime std.meta.fields(@TagType(Surface));
         inline for (std.meta.fields(Surface)) |field, i| {
-            if (@enumToInt(surface) == enum_fields[i].value) {
-                return @field(surface, field.name).aabb;
+            if (@enumToInt(surface.*) == enum_fields[i].value) {
+                return @field(surface.*, field.name).aabb;
             }
         }
         std.debug.warn("Surface.aabb() unreachable. {}", .{surface});
