@@ -15,10 +15,9 @@ pub const Color = struct {
     pub const white = init(1.0, 1.0, 1.0);
     pub const gold = init(1.0, 0.843, 0);
     pub const silver = init(0.752, 0.752, 0.752);
-    pub const red = init(1.0, 0.0, 0.0);
-    pub const green = init(0.0, 1.0, 0.0);
-    pub const blue = init(0.0, 0.0, 1.0);
-
+    pub const red = init(1.0, 0.01, 0.01);
+    pub const green = init(0.01, 1.0, 0.01);
+    pub const blue = init(0.01, 0.01, 1.0);
 
     // TODO why not inline allowed here?
     pub fn init(r: f32, g: f32, b: f32) Color {
