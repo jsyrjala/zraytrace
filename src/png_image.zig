@@ -75,7 +75,6 @@ pub fn readFile(allocator: *Allocator, filename: []const u8) anyerror! *Image {
         row_pointers[y] = @ptrCast([*c]c.png_byte, @alignCast(8, try tmp_allocator.alloc(c.png_bytep, byte_count)));
     }
 
-    // https://gist.github.com/niw/5963798#file-libpng_test-c-L138
     c.png_read_image(png, row_pointers);
     const image = try Image.init(allocator, width, height);
     y = 0;
@@ -104,13 +103,13 @@ const expectEqual = std.testing.expectEqual;
 const ppm_image = @import("ppm_image.zig");
 
 test "read png" {
-    const filename = "images/example-3.png";
+    const filename = "models/images/nitor-logo.png";
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = &arena.allocator;
     
     const image: * Image = try readFile(allocator, filename);
     defer image.deinit();
-    try ppm_image.writeFile("target/foo.ppm", image);
+    try ppm_image.writeFile("target/nitor-logo.ppm", image);
 
 }
