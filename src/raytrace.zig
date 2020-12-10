@@ -122,7 +122,8 @@ fn boundedVolumeHierarchy(allocator: *Allocator, random: *Random, surfaces: Arra
 // TODO make a SurfaceList abstraction
 fn preprocessSufraces(allocator: *Allocator, random: *Random,
                         surfaces: ArrayList(Surface), render_params: RenderParams) ! ArrayList(Surface) {
-    if (render_params.bounded_volume_hierarchy) {
+    // BVH makes things faster only with large number of surfaces
+    if (render_params.bounded_volume_hierarchy and surfaces.items.len > 10) {
         std.debug.warn("Using Bounded Volume Hierarchy\n", .{});
         return boundedVolumeHierarchy(allocator, random, surfaces);
     }

@@ -45,7 +45,7 @@ pub const Triangle = struct {
 
     /// Detect if a ray hits the triangle
     /// https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
-    pub fn hit(triangle: Triangle, surface: *Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord{
+    pub fn hit(triangle: *Triangle, surface: *Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord{
         const a = triangle.a;
         const b = triangle.b;
         const c = triangle.c;

@@ -28,7 +28,7 @@ pub const Sphere = struct {
                       .material = material, .aabb = aabb};
     }
 
-    pub fn hit(sphere: Sphere, surface: *Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
+    pub fn hit(sphere: *Sphere, surface: *Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
         const oc = ray.origin.minus(sphere.center);
         const half_b = oc.dot(ray.direction);
         const c = oc.lengthSquared() - (sphere.radius * sphere.radius);
