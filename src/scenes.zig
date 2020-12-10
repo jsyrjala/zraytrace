@@ -63,17 +63,21 @@ pub fn threeBalls(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
     defer surfaces.deinit();
 
     const earthmap_image = try png_image.readFile(tmp_allocator, "./models/images/earthmap.png");
-    const nitor_image = try png_image.readFile(tmp_allocator, "./models/images/nitor-logo-25.png");
+    defer earthmap_image.deinit();
 
-    const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.gold)));
-    const earth_metal = Material.initMetal(Metal.init(Texture.initImage(nitor_image)));
+    const nitor_image = try png_image.readFile(tmp_allocator, "./models/images/nitor-logo-25.png");
+    defer nitor_image.deinit();
+
+    const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.silver)));
+    const nitor_material = Material.initLambertian(Lambertian.init(random, Texture.initImage(nitor_image)));
     const green_matte = Material.greenMatte(random);
 
     //const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initColor(Color.init(0.5, 0., 0.5))));
-    const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initImage(earthmap_image)));
+    const earth_material = Material.initMetal(Metal.init(Texture.initImage(earthmap_image)));
 
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(8), 2.0, &earth_metal)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.5, &purple_matte)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(8), 2.0, &nitor_material)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-3., -1.5, 3.0), 1.0, &gold_metal)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.5, &earth_material)));
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1., -102.5, 4.0), 100.0, &green_matte)));
 
     const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
