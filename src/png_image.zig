@@ -64,15 +64,15 @@ pub fn readFile(allocator: *Allocator, filename: []const u8) anyerror! *Image {
     c.png_read_update_info(png, info);
 
     // Reading pixels
-    var tmp_allocator = std.heap.ArenaAllocator.init(allocator);
-    defer tmp_allocator.deinit();
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
+    const tmp_allocator = &arena.allocator;
 
-    // TODO use Allocator
-    var row_pointers: [*c][*c]c.png_byte = @ptrCast([*c][*c]c.png_byte, @alignCast(8, c.malloc(@sizeOf(c.png_bytep) * height)));
+    var row_pointers: [*c][*c]c.png_byte = @ptrCast([*c][*c]c.png_byte, @alignCast(8, try tmp_allocator.alloc(c.png_bytep, height)));
     var y: u16 = 0;
     while (y < height) : (y += 1) {
         const byte_count = c.png_get_rowbytes(png, info);
-        row_pointers[y] = @ptrCast([*]c.png_byte, c.malloc(byte_count));
+        row_pointers[y] = @ptrCast([*c]c.png_byte, @alignCast(8, try tmp_allocator.alloc(c.png_bytep, byte_count)));
     }
 
     // https://gist.github.com/niw/5963798#file-libpng_test-c-L138
@@ -86,15 +86,11 @@ pub fn readFile(allocator: *Allocator, filename: []const u8) anyerror! *Image {
             const px0: c.png_byte = row[x * 3 + 0];
             const px1: c.png_byte = row[x * 3 + 1];
             const px2: c.png_byte = row[x * 3 + 2];
-            const image_offset = (height - y - 1) * height + x;
             // TODO Image flipped around X axis
+            const image_offset = (height - y - 1) * height + x;
             image.pixels[image_offset] = Color.init(@intToFloat(f32, px0)/0xff, @intToFloat(f32, px1)/0xff, @intToFloat(f32, px2)/0xff);
         }
-        // TODO use Allocator
-        c.free(row);
     }
-    // TODO use Allocator
-    c.free(@ptrCast(*c_void, row_pointers));
 
     _ = c.fclose(fp);
     c.png_destroy_read_struct(&png, &info, null);
