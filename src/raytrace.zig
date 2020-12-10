@@ -56,6 +56,8 @@ inline fn backgroundColor(ray: *const Ray) Color {
             .add(Color.init(0.5, 0.7, 1.0).scale(t));
 }
 
+// TODO optimization: pass in empty hit_record where everything fills data
+// More efficient to pass a pointer around?
 fn rayColor(ray: *const Ray, surfaces: ArrayList(Surface), depth: u32, progress: *Progress) Color {
     // TODO use russian roulette to conditionally to continue
     if (depth <= 0) {
