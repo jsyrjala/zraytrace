@@ -2,7 +2,7 @@ const std = @import("std");
 const raytrace = @import("raytrace.zig");
 const RenderParams = raytrace.RenderParams;
 const scenes = @import("scenes.zig");
-const ppm_image = @import("ppm_image.zig");
+const png_image = @import("png_image.zig");
 
 fn parse_int_arg(alloc: *std.mem.Allocator, args: *std.process.ArgIterator) ! u16 {
     const s = try args.next(alloc).?;
@@ -32,5 +32,5 @@ pub fn main() ! void {
                                         .bounded_volume_hierarchy = true};
     const scene_image = try scenes.render_scene(alloc, render_params, scene_index);
     defer scene_image.deinit();
-    const foo = ppm_image.writeFile(filename, scene_image);
+    const foo = png_image.writeFile(alloc, filename, scene_image);
 }
