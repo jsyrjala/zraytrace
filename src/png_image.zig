@@ -93,6 +93,60 @@ pub fn readFile(allocator: *Allocator, filename: []const u8) anyerror! *Image {
     return image;
 }
 
+pub fn writeFile(allocator: *Allocator, filename: []const u8, image: *Image) anyerror! void {
+    const fp = c.fopen(@ptrCast([*c]const u8, filename), "wb");
+    if (fp == null) {
+        std.debug.warn("Can't open file {}", .{filename});
+        return PngError.FailedToOpenFile;
+    }
+
+    var png: c.png_structp = c.png_create_write_struct(c.PNG_LIBPNG_VER_STRING, null, null, null);
+    if (png == null) {
+        return PngError.BadPngFile;
+    }
+
+    var info: c.png_infop = c.png_create_info_struct(png);
+    if (info == null) {
+        return PngError.BadPngFile;
+    }
+    c.png_init_io(png, fp);
+    // Output is 8bit depth, RGBA format.
+    c.png_set_IHDR(
+        png,
+        info,
+        image.width, image.height,
+        8,
+        c.PNG_COLOR_TYPE_RGB,
+        c.PNG_INTERLACE_NONE,
+        c.PNG_COMPRESSION_TYPE_DEFAULT,
+        c.PNG_FILTER_TYPE_DEFAULT
+    );
+    c.png_write_info(png, info);
+
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
+    const tmp_allocator = &arena.allocator;
+
+    var row_pointers: [*c][*c]c.png_byte = @ptrCast([*c][*c]c.png_byte, @alignCast(8, try tmp_allocator.alloc(c.png_bytep, image.height)));
+    var y: u16 = 0;
+    while (y < image.height) : (y += 1) {
+        row_pointers[y] = @ptrCast([*c]c.png_byte, @alignCast(8, try tmp_allocator.alloc(c.png_bytep, image.width * 3)));
+        var x: u16 = 0;
+        while (x < image.width) : (x += 1) {
+            const image_offset = (image.height - y - 1) * image.width + x;
+            const color = image.pixels[image_offset];
+            row_pointers[y][x * 3] = @floatToInt(u8, std.math.clamp(255.999 * color.r, 0, 0xff));
+            row_pointers[y][x * 3 + 1] = @floatToInt(u8, std.math.clamp(255.999 * color.g, 0, 0xff));
+            row_pointers[y][x * 3 + 2] = @floatToInt(u8, std.math.clamp(255.999 * color.b, 0, 0xff));
+        }
+    }
+    c.png_write_image(png, row_pointers);
+    c.png_write_end(png, null);
+    _ = c.fclose(fp);
+
+    c.png_destroy_write_struct(&png, &info);
+}
+
 //// Testing
 const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
@@ -107,5 +161,6 @@ test "read png" {
     
     const image: * Image = try readFile(allocator, filename);
     defer image.deinit();
-    try ppm_image.writeFile("target/nitor-logo.ppm", image);
+    // try ppm_image.writeFile("target/nitor-logo.ppm", image);
+    try writeFile(allocator, "target/nitor-logo-copy.png", image);
 }
