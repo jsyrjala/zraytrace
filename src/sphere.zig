@@ -3,6 +3,7 @@ const math = std.math;
 const BaseFloat = @import("base.zig").BaseFloat;
 const vector = @import("vector.zig");
 const Vec3 = vector.Vec3;
+const Vec2 = vector.Vec2;
 const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Material = @import("material.zig").Material;
@@ -42,14 +43,28 @@ pub const Sphere = struct {
         if (t1 < t_max and t1 > t_min) {
             const location = ray.rayAt(t1);
             const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-            return HitRecord.init(ray, location, outward_normal, t1, surface);
+            // TODO texture coordinates
+            const theta = std.math.acos(-outward_normal.y());
+            const phi = std.math.atan2(BaseFloat, - outward_normal.z(), - outward_normal.x()) + std.math.pi;
+            const u = phi / (2 * std.math.pi);
+            const v = theta / std.math.pi;
+            const texture_coords = Vec2.init(u, v);
+
+            return HitRecord.init(ray, location, outward_normal, t1, surface, texture_coords);
         }
         // this should happen only if ray starting point is inside of the sphere?
         const t2 = -half_b + root;
         if (t2 < t_max and t2 > t_min) {
             const location = ray.rayAt(t2);
             const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
-            return HitRecord.init(ray, location, outward_normal, t2, surface);
+            // TODO texture coordinates
+            const theta = std.math.acos(-outward_normal.y());
+            const phi = std.math.atan2(BaseFloat, - outward_normal.z(), - outward_normal.x()) + std.math.pi;
+            const u = phi / (2 * std.math.pi);
+            const v = theta / std.math.pi;
+            const texture_coords = Vec2.init(u, v);
+
+            return HitRecord.init(ray, location, outward_normal, t2, surface, texture_coords);
         }
         // no hit inside t_min/t_max
         return null;

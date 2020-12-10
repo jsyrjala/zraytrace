@@ -3,6 +3,7 @@ const math = std.math;
 const BaseFloat = @import("base.zig").BaseFloat;
 const vector = @import("vector.zig");
 const Vec3 = vector.Vec3;
+const Vec2 = vector.Vec2;
 const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Surface = @import("surface.zig").Surface;
@@ -61,7 +62,8 @@ pub const Triangle = struct {
                         u >= 0.0 and v >= 0.0 and (u+v) <= 1.0;
         if (is_hit) {
             const location = ray.origin.plus(ray.direction.scale(t));
-            return HitRecord.init(ray, location, triangle.face_unit_normal, t, surface);
+            const texture_coords = Vec2.init(u, v);
+            return HitRecord.init(ray, location, triangle.face_unit_normal, t, surface, texture_coords);
         }
         return null;
     }

@@ -6,6 +6,7 @@ const math = std.math;
 const BaseFloat = @import("base.zig").BaseFloat;
 const vector = @import("vector.zig");
 const Vec3 = vector.Vec3;
+const Vec2 = vector.Vec2;
 const Ray = @import("ray.zig").Ray;
 const Surface = @import("surface.zig").Surface;
 const Material = @import("material.zig").Material;
@@ -21,18 +22,22 @@ pub const HitRecord = struct {
     front_face: bool,
     /// Pointer to object that collided
     surface: Surface,
-
-    pub fn init(ray: *const Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: Surface) HitRecord {
+    /// Texture coordinates
+    texture_coords: Vec2 = Vec2.init(0.0, 0.0),
+    
+    pub fn init(ray: *const Ray, location: Vec3, outward_normal: Vec3, t: BaseFloat, surface: Surface, texture_coords: Vec2) HitRecord {
         if (ray.direction.dot(outward_normal) > 0.0) {
             return HitRecord{.location = location,
                             .normal = outward_normal.negate(),
                             .t = t, .front_face = false,
-                            .surface = surface};
+                            .surface = surface, 
+                            .texture_coords = texture_coords};
         }
         return HitRecord{.location = location,
                             .normal = outward_normal,
                             .t = t, .front_face = true,
-                            .surface = surface};
+                            .surface = surface,
+                            .texture_coords = texture_coords};
     }
 
     pub fn format(self: HitRecord, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {

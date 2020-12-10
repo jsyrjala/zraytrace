@@ -9,6 +9,7 @@ const Image = image.Image;
 const Color = image.Color;
 const Vec3 = @import("vector.zig").Vec3;
 const Sphere = @import("sphere.zig").Sphere;
+const Texture = @import("texture.zig").Texture;
 const material = @import("material.zig");
 const Material = material.Material;
 const Metal = material.Metal;
@@ -18,6 +19,7 @@ const Camera = @import("camera.zig").Camera;
 const Surface = @import("surface.zig").Surface;
 const ObjReader = @import("obj_reader.zig");
 const raytrace = @import("raytrace.zig");
+const png_image = @import("png_image.zig");
 
 
 pub fn manAndBall(allocator: *std.mem.Allocator, render_params: raytrace.RenderParams) ! *Image {
@@ -60,13 +62,18 @@ pub fn threeBalls(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
     var surfaces = ArrayList(Surface).init(tmp_allocator);
     defer surfaces.deinit();
 
+    const earthmap_image = try png_image.readFile(tmp_allocator, "./models/images/earthmap.png");
+    const nitor_image = try png_image.readFile(tmp_allocator, "./models/images/nitor-logo-25.png");
 
-    const gold_metal = Material.initMetal(Metal.init(Color.gold));
+    const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.gold)));
+    const earth_metal = Material.initMetal(Metal.init(Texture.initImage(nitor_image)));
     const green_matte = Material.greenMatte(random);
-    const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
 
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), -2.0, &gold_metal)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.0, &purple_matte)));
+    //const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initColor(Color.init(0.5, 0., 0.5))));
+    const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initImage(earthmap_image)));
+
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(8), 2.0, &earth_metal)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.5, &purple_matte)));
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1., -102.5, 4.0), 100.0, &green_matte)));
 
     const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
@@ -151,9 +158,12 @@ pub fn teapotAndBallCircle(allocator: *std.mem.Allocator, render_params: raytrac
     var surfaces = ArrayList(Surface).init(tmp_allocator);
     defer surfaces.deinit();
 
-    const gold_metal = Material.initMetal(Metal.init(Color.gold));
+    const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.gold)));
     const green_matte = Material.greenMatte(random);
-    const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
+
+    const earthmap_image = try png_image.readFile(tmp_allocator, "./models/images/earthmap.png");
+
+    const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initImage(earthmap_image)));
 
     const filename = "./models/teapot/teapot.obj";
     const model: ArrayList(Surface) = try ObjReader.readObjFile(allocator, filename, &Material.blue_metal);

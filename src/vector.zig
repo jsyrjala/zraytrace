@@ -10,6 +10,15 @@ const Allocator = mem.Allocator;
 
 const BaseFloat = base.BaseFloat;
 
+pub const Vec2 = struct {
+    u: BaseFloat,
+    v: BaseFloat,
+
+    pub inline fn init(_u: BaseFloat, _v: BaseFloat) Vec2 {
+        return Vec2{.u = _u, .v = _v};
+    }
+};
+
 pub const Vec3 = struct {
     _x: BaseFloat,
     _y: BaseFloat,

@@ -8,17 +8,18 @@ const Vec3 = vector.Vec3;
 const Sample = @import("Sample.zig").Sample;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Surface = @import("surface.zig").Surface;
+const Texture = @import("texture.zig").Texture;
 
 /// Material is "supertype" for all material types
 pub const Material = union (enum) {
     /// Example materials
-    pub const black_metal = initMetal(Metal.init(Color.black));
-    pub const silver_metal = initMetal(Metal.init(Color.silver));
-    pub const blue_metal = initMetal(Metal.init(Color.blue));
-    pub const green_metal = initMetal(Metal.init(Color.green));
+    pub const black_metal = initMetal(Metal.init(Texture.initColor(Color.black)));
+    pub const silver_metal = initMetal(Metal.init(Texture.initColor(Color.silver)));
+    pub const blue_metal = initMetal(Metal.init(Texture.initColor(Color.blue)));
+    pub const green_metal = initMetal(Metal.init(Texture.initColor(Color.green)));
 
     pub fn greenMatte(random: *Random) Material {
-        return initLambertian(Lambertian.init(random, Color.green));
+        return initLambertian(Lambertian.init(random, Texture.initColor(Color.green)));
     }
 
     lambertian: Lambertian,
@@ -53,25 +54,26 @@ pub const Scattering = struct {
 /// Diffuse material
 pub const Lambertian = struct {
     random: *Random,
-    albedo: Color,
+    texture: Texture,
 
-    pub fn init(random: *Random, color: Color) Lambertian {
-        return .{.random = random, .albedo = color};
+    pub fn init(random: *Random, texture: Texture) Lambertian {
+        return .{.random = random, .texture = texture};
     }
 
     pub inline fn scatter(material: Lambertian, ray: *const Ray, hit_record: HitRecord) ?Scattering {
         const scatter_direction = hit_record.normal
                                     .plus(Sample.randomUnitVector(material.random));
         const scattered = Ray.init(hit_record.location, scatter_direction);
-        return Scattering.init(scattered, material.albedo);
+        return Scattering.init(scattered, material.texture.albedo(hit_record.texture_coords, hit_record.location));
     }
 };
 
 /// Metal material
 pub const Metal = struct {
-    albedo: Color,
-    pub fn init(color: Color) Metal {
-        return .{.albedo = color};
+    texture: Texture,
+
+    pub fn init(texture: Texture) Metal {
+        return .{.texture = texture};
     }
 
     pub inline fn scatter(material: Metal, ray: *const Ray, hit_record: HitRecord) ?Scattering {
@@ -79,7 +81,7 @@ pub const Metal = struct {
         const scattered = Ray.init(hit_record.location, reflected);
         const produce_ray = scattered.direction.dot(hit_record.normal) > 0;
         if (produce_ray) {
-            return Scattering.init(scattered, material.albedo);
+            return Scattering.init(scattered, material.texture.albedo(hit_record.texture_coords, hit_record.location));
         }
         return null;
     }
