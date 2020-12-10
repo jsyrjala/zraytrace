@@ -1,3 +1,4 @@
 zig-cache/
 target/
 .DS_Store
+images/
