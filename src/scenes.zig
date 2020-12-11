@@ -72,7 +72,7 @@ pub fn threeBalls(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
     const mirror_material = Material.initMetal(Metal.init(Texture.initColor(Color.silver)));
     const nitor_material = Material.initLambertian(Lambertian.init(random, Texture.initImage(nitor_image)));
     const green_matte = Material.greenMatte(random);
-
+    const marble_material = Material.initLambertian(Lambertian.init(random, Texture.initPerlin(random, Color.blue)));
     // window glass = 1.52
     const index_of_refraction = 1.52;
     const dielectric = Dielectric.init(random, index_of_refraction);
@@ -85,7 +85,8 @@ pub fn threeBalls(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(8), 2.0, &nitor_material)));
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-3., -1.5, 3.0), 1.0, &mirror_material)));
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.5, &earth_material)));
-    
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(0, -1.5, 1), 0.5, &marble_material)));
+
     // filled glass
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-1, -1, 2.0), 0.7, &glass_material)));
     // hollow glass
