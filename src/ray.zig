@@ -32,6 +32,6 @@ test "Ray.rayAt" {
     const direction = Vec3.init(1.0, 2.0, 3.0);
     const ray = Ray.init(origin, direction);
     const vec = ray.rayAt(2.0);
-    const expected = Vec3.init(3.0, 5.0, 7.0);
+    const expected = Vec3.init(1.53452253e+00, 2.06904506e+00, 2.60356736e+00);
     expectEqual(expected, vec);
 }
