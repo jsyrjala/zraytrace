@@ -36,15 +36,15 @@ pub const BVHNode = struct {
 
     // Comparator functions sort by minimum AABB coordinates
     fn compareX(a: *Surface, b: *Surface) bool {
-        return a.aabb().min.x() < b.aabb().min.x();
+        return a.aabb().midpoint.x() < b.aabb().midpoint.x();
     }
 
     fn compareY(a: *Surface, b: *Surface) bool {
-        return a.aabb().min.y() < b.aabb().min.y();
+        return a.aabb().midpoint.y() < b.aabb().midpoint.y();
     }
 
     fn compareZ(a: *Surface, b: *Surface) bool {
-        return a.aabb().min.z() < b.aabb().min.z();
+        return a.aabb().midpoint.z() < b.aabb().midpoint.z();
     }
 
     const axis_comparators = [_]* const fn (a: *Surface, b: *Surface) bool{&compareX, &compareY, &compareZ};
@@ -98,8 +98,8 @@ pub const BVHNode = struct {
         }
 
         var axis_index: u8 = 0;
-        for (splits) |split| {
-            while (axis_index < 3) : (axis_index += 1) {
+        while (axis_index < 3) : (axis_index += 1) {
+            for (splits) |split| {
                 const axis_divide = make_axis_divide(axis_index, surfaces, split);
                 const right_aabb = try surfaces_to_aabb(allocator, axis_divide.right_surfaces);
                 const left_aabb = try surfaces_to_aabb(allocator, axis_divide.left_surfaces);
@@ -112,7 +112,6 @@ pub const BVHNode = struct {
                     best_split = split;
                 }
             }
-            std.debug.warn("", .{});
         }
         // redo the best split
         // TODO this might make a different split if the sort is not stable

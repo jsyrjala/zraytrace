@@ -10,6 +10,7 @@ const math = std.math;
 pub const AABB = struct {
     min: Vec3,
     max: Vec3,
+    midpoint: Vec3,
 
     /// Return a vector that contains minimum coordinates
     fn minimumVec(vec1: Vec3, vec2: Vec3) Vec3 {
@@ -25,10 +26,18 @@ pub const AABB = struct {
                          math.max(vec1.z(), vec2.z()));
     }
 
+    /// Return a vector that contains midpoint coordinates
+    fn midpointVec(vec1: Vec3, vec2: Vec3) Vec3 {
+        return Vec3.init((vec1.x() + vec2.x()) / 2.0,
+                         (vec1.y() + vec2.y()) / 2.0,
+                         (vec1.z() + vec2.z()) / 2.0);
+    }
+
     /// Create AABB from two vertices
     pub fn initMinMax(corner1: Vec3, corner2: Vec3) AABB {
         return AABB{.min = minimumVec(corner1, corner2),
-                    .max = maximumVec(corner1, corner2)};
+                    .max = maximumVec(corner1, corner2),
+                    .midpoint = midpointVec(corner1, corner2)};
     }
 
     /// Create AABB from list of vertices
