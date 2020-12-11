@@ -12,7 +12,10 @@ pub const Texture = union (enum) {
         return Texture{.color = ColorTexture.init(color)};
     }
     pub fn initImage(image: *Image) Texture {
-        return Texture{.image = ImageTexture.init(image)};
+        return Texture{.image = ImageTexture.init(image, 0.19, 0.1)};
+    }
+    pub fn initImageOpts(image: *Image, u_offset: f32, v_offset: f32) Texture {
+        return Texture{.image = ImageTexture.init(image, u_offset, v_offset)};
     }
     pub fn albedo(texture: Texture, texture_coords: Vec2, point :Vec3) Color {
         switch(texture) {
@@ -37,13 +40,15 @@ pub const ColorTexture = struct {
 
 pub const ImageTexture = struct {
     image: *Image,
-    
-    pub fn init(image: *Image) ImageTexture {
-        return ImageTexture{.image = image};
+    u_offset: f32,
+    v_offset: f32,
+
+    pub fn init(image: *Image, u_offset: f32, v_offset: f32) ImageTexture {
+        return ImageTexture{.image = image, .u_offset = u_offset, .v_offset = v_offset};
     }
+
     pub fn albedo(self: @This(), texture_coords: Vec2, point: Vec3) Color {
-        const u_offset = 0.19;
-        const uu_first = (1.0 - texture_coords.u + u_offset);
+        const uu_first = (1.0 - texture_coords.u + self.u_offset);
         var uu = uu_first;
         if (uu_first > 1.0) {
             uu = uu_first - 1.0;
@@ -52,7 +57,7 @@ pub const ImageTexture = struct {
         }
 
         const v_offset = 0.1;
-        const vv_first = texture_coords.v + v_offset;
+        const vv_first = texture_coords.v + self.v_offset;
         var vv = vv_first;
         if (vv_first > 1.0) {
             vv = vv_first - 1.0;
@@ -76,8 +81,8 @@ const png_image = @import("png_image.zig");
 test "ColorTexture.albedo()" {
     const color = Color.init(0.1, 0.2, 0.3);
     const texture = Texture.initColor(color);
-    expectEqual(color, texture.albedo(0.1, 0.1, Vec3.origin));
-    expectEqual(color, texture.albedo(0.2, 0.2, Vec3.origin));
+    expectEqual(color, texture.albedo(Vec2.init(0.1, 0.1), Vec3.origin));
+    expectEqual(color, texture.albedo(Vec2.init(0.2, 0.2), Vec3.origin));
 }
 
 test "ImageTexture.albedo()" {
@@ -88,9 +93,9 @@ test "ImageTexture.albedo()" {
     
     const image = try png_image.readFile(allocator, filename);
 
-    const texture = Texture.initImage(image);
-    expectEqual(Color.init(1.0e+00, 1.0e+00, 1.0e+00), texture.albedo(Vec2.init(0.0, 0.0), Vec3.origin));
-    expectEqual(Color.init(3.09803932e-01, 3.33333343e-01, 4.74509805e-01), texture.albedo(Vec2.init(0.1, 0.1), Vec3.origin));
+    const texture = Texture.initImageOpts(image, 0, 0);
+    expectEqual(Color.init(9.21568632e-01,9.37254905e-01,9.49019610e-01), texture.albedo(Vec2.init(0.0, 0.0), Vec3.origin));
+    expectEqual(Color.init(9.25490200e-01,9.45098042e-01,9.56862747e-01), texture.albedo(Vec2.init(0.1, 0.1), Vec3.origin));
     expectEqual(Color.init(0.0e+00, 7.84313771e-03, 2.07843139e-01), texture.albedo(Vec2.init(0.5, 0.5), Vec3.origin));
-    expectEqual(Color.init(9.21568632e-01, 9.37254905e-01, 9.49019610e-01), texture.albedo(Vec2.init(1.0, 1.0), Vec3.origin));
+    expectEqual(Color.init(1.0e+00,1.0e+00,1.0e+00), texture.albedo(Vec2.init(1.0, 1.0), Vec3.origin));
 }
