@@ -4,6 +4,7 @@ const Random = std.rand.Random;
 const Color = @import("image.zig").Color;
 const Ray = @import("ray.zig").Ray;
 const vector = @import("vector.zig");
+const Vec2 = vector.Vec2;
 const Vec3 = vector.Vec3;
 const Sample = @import("Sample.zig").Sample;
 const HitRecord = @import("hit_record.zig").HitRecord;
@@ -93,43 +94,43 @@ const expectEqual = std.testing.expectEqual;
 const Sphere = @import("sphere.zig").Sphere;
 
 test "Material.scatter()" {
-    const metal = Metal.init(Color.black);
+    const metal = Metal.init(Texture.initColor(Color.black));
     const material = &Material.initMetal(metal);
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
-    const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
+    var surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
-    const hit = HitRecord.init(ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, surface);
-    const scattering = material.scatter(ray, hit);
+    const hit = HitRecord.init(&ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, &surface, Vec2.origin);
+    const scattering = material.scatter(&ray, hit);
 }
 
 test "Lambertian.init()" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
-    const material = &Lambertian.init(random, Color.black);
+    const material = &Lambertian.init(random, Texture.initColor(Color.black));
 }
 
 test "Lambertian.scatter()" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
-    const lambertian = Lambertian.init(random, Color.black);
+    const lambertian = Lambertian.init(random, Texture.initColor(Color.black));
     const material = &Material.initLambertian(lambertian);
-    const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
+    var surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
-    const hit = HitRecord.init(ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, surface);
-    const scattering = material.scatter(ray, hit);
+    const hit = HitRecord.init(&ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, &surface, Vec2.origin);
+    const scattering = material.scatter(&ray, hit);
 }
 
 test "Metal.init()" {
-    const material = Metal.init(Color.black);
+    const material = Metal.init(Texture.initColor(Color.black));
 }
 
 test "Metal.scatter()" {
-    const metal = Metal.init(Color.black);
+    const metal = Metal.init(Texture.initColor(Color.black));
     const material = &Material.initMetal(metal);
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
     const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
-    const hit = HitRecord.init(ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, surface);
-    const scattering = material.scatter(ray, hit);
+    const hit = HitRecord.init(&ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, &surface, Vec2.origin);
+    const scattering = material.scatter(&ray, hit);
 }

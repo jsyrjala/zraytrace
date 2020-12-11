@@ -28,7 +28,7 @@ pub const Sphere = struct {
                       .material = material, .aabb = aabb};
     }
 
-    pub fn hit(sphere: *Sphere, surface: *Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
+    pub fn hit(sphere: *const Sphere, surface: *const Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord {
         const oc = ray.origin.minus(sphere.center);
         const half_b = oc.dot(ray.direction);
         const c = oc.lengthSquared() - (sphere.radius * sphere.radius);
@@ -80,5 +80,5 @@ test "Sphere.init" {
     const sphere = Sphere.init(vec, 10.0, &Material.black_metal);
     const surface = Surface.initSphere(sphere);
     const ray = Ray.init(vec, vec);
-    const hit_record = sphere.hit(surface, ray, 0.1, 10000.0);
+    const hit_record = sphere.hit(&surface, &ray, 0.1, 10000.0);
 }

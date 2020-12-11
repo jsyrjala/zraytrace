@@ -12,6 +12,7 @@ const Color = img.Color;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Camera = @import("camera.zig").Camera;
 const Material = @import("material.zig").Material;
+const Texture = @import("texture.zig").Texture;
 const Surface = @import("surface.zig").Surface;
 usingnamespace @import("bvh.zig");
 
@@ -220,9 +221,9 @@ test "Render something" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
 
-    const gold_metal = Material.initMetal(Metal.init(Color.gold));
+    const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.gold)));
     const green_matte = Material.greenMatte(random);
-    const purple_matte = Material.initLambertian(Lambertian.init(random, Color.init(0.5, 0., 0.5)));
+    const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initColor(Color.init(0.5, 0., 0.5))));
 
     // TODO this copies the materials with objects
     try objects.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), 2.0, &gold_metal)));

@@ -25,22 +25,21 @@ pub const Surface = union (enum) {
     }
 
     /// Find the right surface type and call it's hit method
-    pub inline fn hit(surface: *Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
-        const enum_fields = comptime std.meta.fields(@TagType(Surface));
-        inline for (std.meta.fields(Surface)) |field, i| {
-            if (@enumToInt(surface.*) == enum_fields[i].value) {
-                return @field(surface.*, field.name).hit(surface, ray, t_min, t_max);
-            }
+    pub inline fn hit(surface: *const Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
+        switch (surface.*) {
+            Surface.bvh_node => |obj| return obj.hit(surface, ray, t_min, t_max),
+            Surface.triangle => |obj| return obj.hit(surface, ray, t_min, t_max),
+            Surface.sphere => |obj| return obj.hit(surface, ray, t_min, t_max),
         }
         std.debug.warn("Surface.hit() unreachable.", .{});
         unreachable;
     }
 
     // one way to do polymorphism
-    pub inline fn material(surface: *Surface) *const Material {
+    pub inline fn material(surface: *const Surface) *const Material {
         switch (surface.*) {
-            Surface.sphere => |obj| return obj.material,
             Surface.triangle => |obj| return obj.material,
+            Surface.sphere => |obj| return obj.material,
             // no material for bvh node
             else => unreachable
         }
@@ -49,7 +48,7 @@ pub const Surface = union (enum) {
     }
 
     // other way to do polymorphism, code should be about identical in this and above
-    pub inline fn aabb(surface: *Surface) AABB {
+    pub inline fn aabb(surface: *const Surface) AABB {
         const enum_fields = comptime std.meta.fields(@TagType(Surface));
         inline for (std.meta.fields(Surface)) |field, i| {
             if (@enumToInt(surface.*) == enum_fields[i].value) {
@@ -81,7 +80,7 @@ test "Surface.hit()" {
     try surfaces.append(Surface{.triangle = triangle});
     try surfaces.append(Surface{.sphere = sphere});
     for (surfaces.items) |*surface| {
-        _ = surface.hit(ray, 1.0, 20.0);
+        _ = surface.hit(&ray, 1.0, 20.0);
         _ = surface.aabb();
     }
 }

@@ -45,7 +45,7 @@ pub const Triangle = struct {
 
     /// Detect if a ray hits the triangle
     /// https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
-    pub fn hit(triangle: *Triangle, surface: *Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord{
+    pub fn hit(triangle: *const Triangle, surface: *const Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord{
         const a = triangle.a;
         const b = triangle.b;
         const c = triangle.c;
@@ -88,7 +88,7 @@ test "Triangle.hit() ray doesn't hit the triangle" {
     const surface = Surface.initTriangle(triangle);
     const vec = Vec3.init(1.0, 1.0, 1.0);
     const ray = Ray.init(vec, vec);
-    const hit_record = triangle.hit(surface, ray, 0.1, 10000.0);
+    const hit_record = triangle.hit(&surface, &ray, 0.1, 10000.0);
     if (hit_record != null ) {
         expect(false);
     }
@@ -104,7 +104,7 @@ test "Triangle.hit() ray hits the triangle" {
     const origin = Vec3.init(0.0, 0.0, -10.0);
     const direction = Vec3.init(0.0, 0.0, 1.0);
     const ray = Ray.init(origin, direction);
-    const hit_record = triangle.hit(surface, ray, 0.1, 10000.0);
+    const hit_record = triangle.hit(&surface, &ray, 0.1, 10000.0);
     if (hit_record == null) {
         expect(false);
     } else {

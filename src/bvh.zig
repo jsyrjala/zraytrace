@@ -8,6 +8,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const Random = std.rand.Random;
+usingnamespace @import("sample.zig");
 usingnamespace @import("base.zig");
 usingnamespace @import("aabb.zig");
 usingnamespace @import("vector.zig");
@@ -123,7 +124,7 @@ pub const BVHNode = struct {
         return root_bvh_node;
     }
 
-    pub fn hit(node: BVHNode, surface: *Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
+    pub fn hit(node: *const BVHNode, surface: *const Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
         if (!node.aabb.hitAabb(ray, t_min, t_max)) {
             // no hit on bounding box, can't hit anything inside the bounding box
             return null;
@@ -216,8 +217,8 @@ test "BVHNode.hit()" {
     var i: u64 = 0;
     var hits: u64 = 0;
     while (i<ray_count) : ( i+= 1) {
-        const ray = Ray.init(Vec3.randomUnitVector(random).scale(100.0), Vec3.randomUnitVector(random));
-        const hit = bvh_surface.hit(ray, 0.0001, std.math.inf(BaseFloat));
+        const ray = Ray.init(Sample.randomUnitVector(random).scale(100.0), Sample.randomUnitVector(random));
+        const hit = bvh_surface.hit(&ray, 0.0001, std.math.inf(BaseFloat));
         if (hit != null) {
             hits += 1;
         }

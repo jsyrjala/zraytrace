@@ -14,6 +14,8 @@ pub const Vec2 = struct {
     u: BaseFloat,
     v: BaseFloat,
 
+    pub const origin = Vec2.init(0., 0.);
+
     pub inline fn init(_u: BaseFloat, _v: BaseFloat) Vec2 {
         return Vec2{.u = _u, .v = _v};
     }
