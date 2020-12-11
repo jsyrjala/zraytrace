@@ -59,7 +59,16 @@ pub const BVHNode = struct {
         right_surfaces: []*Surface,
     };
 
-    inline fn make_axis_divide(axis_index: u8, surfaces: []*Surface) AxisDivide {
+    fn surfaces_to_aabb(allocator: *Allocator, surfaces: []*Surface) !AABB {
+        var aabbs = ArrayList(AABB).init(allocator);
+        defer aabbs.deinit();
+        for (surfaces) |surface| {
+            try aabbs.append(surface.aabb());
+        }
+        return AABB.initAabbList(allocator, aabbs.items);
+    }
+
+    fn make_axis_divide(axis_index: u8, surfaces: []*Surface) AxisDivide {
         std.sort.sort(*Surface, surfaces, axis_index, lessThanAxis);
         const split = surfaces.len / 2;
         const left_surfaces = surfaces[0..split];
@@ -68,6 +77,28 @@ pub const BVHNode = struct {
             .left_surfaces = left_surfaces,
             .right_surfaces = right_surfaces
         };
+    }
+
+    fn optimal_axis_divide(allocator: *Allocator, surfaces: []*Surface) !AxisDivide {
+        // Try splitting with every axis,
+        // Use the axis that gives the smallest total surface area for the AABBs of the splits
+        // Heuristics: http://www.pbr-book.org/3ed-2018/Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#TheSurfaceAreaHeuristic
+        var best_axis_index: u8 = 0;
+        var best_area: f32 = std.math.inf(f32);
+        var axis_index: u8 = 0;
+        while (axis_index < 3) : (axis_index += 1) {
+            const axis_divide = make_axis_divide(axis_index, surfaces);
+            const right_aabb = try surfaces_to_aabb(allocator, axis_divide.right_surfaces);
+            const left_aabb = try surfaces_to_aabb(allocator, axis_divide.left_surfaces);
+            const area = right_aabb.surfaceArea() + left_aabb.surfaceArea();
+            if (area < best_area) {
+                best_area = area;
+                best_axis_index = axis_index;
+            }
+        }
+        // redo the best split
+        const axis_divide = make_axis_divide(best_axis_index, surfaces);
+        return axis_divide;
     }
 
     fn divide(allocator: *Allocator, random: *Random, surfaces: []*Surface, depth: u32, tracking: *Tracking) anyerror ! *Surface {
@@ -85,13 +116,8 @@ pub const BVHNode = struct {
             // Does not matter which is left and which is right
             return BVHNode.create(allocator, random, surface1, surface0);
         }
-        const axis_index = random.intRangeAtMost(u8, 0, 2);
-        const axis_divide = make_axis_divide(axis_index, surfaces);
 
-        // TODO
-        // compute sum of AABB surface areas for coordinate splits
-        // use the one that has smallest sum
-        // http://www.pbr-book.org/3ed-2018/Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#TheSurfaceAreaHeuristic
+        const axis_divide = try optimal_axis_divide(allocator, surfaces);
 
         std.debug.assert(surfaces.len == axis_divide.left_surfaces.len + axis_divide.right_surfaces.len);
 

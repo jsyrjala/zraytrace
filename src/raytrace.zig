@@ -197,7 +197,8 @@ pub fn render(allocator: *Allocator, random: *Random,
     std.debug.warn("  Total reflections:     {}\n", .{progress.reflections});
     std.debug.warn("  Pixels per second:     {d:0.2} pixels/s\n", .{@intToFloat(f32, progress.pixels_processed) / runtime});
     std.debug.warn("  Total runtime:         {d:0.2} seconds\n", .{runtime});
-    std.debug.warn("  Render runtime:        {d:0.2} seconds\n", .{render_runtime});
+    std.debug.warn("    Prepare runtime:     {d:0.2} seconds\n", .{runtime - render_runtime});
+    std.debug.warn("    Render runtime:      {d:0.2} seconds\n", .{render_runtime});
     return image;
 }
 
