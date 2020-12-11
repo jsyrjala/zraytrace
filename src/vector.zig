@@ -5,9 +5,7 @@ const mem = std.mem;
 const time = std.time;
 const math = std.math;
 const ArrayList = std.ArrayList;
-
 const Allocator = mem.Allocator;
-
 const BaseFloat = base.BaseFloat;
 
 pub const Vec2 = struct {
@@ -126,8 +124,16 @@ pub const Vec3 = struct {
     }
 
     /// Reflection of a ray from fully reflecting surface
-    pub inline fn reflect(v:Vec3, normal:Vec3) Vec3 {
+    pub inline fn reflect(v: Vec3, normal: Vec3) Vec3 {
         return v.minus(normal.scale(2 * v.dot(normal)));
+    }
+
+    /// Refract (ray bends when entering e.g glass)
+    pub inline fn refract(v: Vec3, normal: Vec3, refraction_ratio: BaseFloat) Vec3 {
+        const cos_theta = math.min(v.negate().dot(normal), 1.0);
+        const r_out_perp = (v.plus(normal.scale(cos_theta))).scale(refraction_ratio);
+        const r_out_parallel = normal.scale(-math.sqrt(math.absFloat(1.0 - r_out_perp.lengthSquared())));
+        return r_out_perp.plus(r_out_parallel);
     }
 
     /// Copy allocate storage and copy vector.

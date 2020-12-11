@@ -12,6 +12,7 @@ const Sphere = @import("sphere.zig").Sphere;
 const Texture = @import("texture.zig").Texture;
 const material = @import("material.zig");
 const Material = material.Material;
+const Dielectric = material.Dielectric;
 const Metal = material.Metal;
 const Lambertian = material.Lambertian;
 
@@ -68,17 +69,31 @@ pub fn threeBalls(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
     const nitor_image = try png_image.readFile(tmp_allocator, "./models/images/nitor-logo-25.png");
     defer nitor_image.deinit();
 
-    const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.silver)));
+    const mirror_material = Material.initMetal(Metal.init(Texture.initColor(Color.silver)));
     const nitor_material = Material.initLambertian(Lambertian.init(random, Texture.initImage(nitor_image)));
     const green_matte = Material.greenMatte(random);
 
-    //const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initColor(Color.init(0.5, 0., 0.5))));
+    // window glass = 1.52
+    const index_of_refraction = 1.52;
+    const dielectric = Dielectric.init(random, index_of_refraction);
+    const glass_material = Material.initDielectric(dielectric);
+
     const earth_material = Material.initMetal(Metal.init(Texture.initImage(earthmap_image)));
+    
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1., -102.5, 4.0), 100.0, &green_matte)));
 
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(8), 2.0, &nitor_material)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-3., -1.5, 3.0), 1.0, &gold_metal)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-3., -1.5, 3.0), 1.0, &mirror_material)));
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.5, &earth_material)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1., -102.5, 4.0), 100.0, &green_matte)));
+    
+    // filled glass
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-1, -1, 2.0), 0.7, &glass_material)));
+    // hollow glass
+    const buble_center = Vec3.init(0.85, -0.7, 1.5);
+    const radius = 0.9;
+    const thickness = 0.1;
+    try surfaces.append(Surface.initSphere(Sphere.init(buble_center, radius, &glass_material)));
+    try surfaces.append(Surface.initSphere(Sphere.init(buble_center, -(radius - thickness), &glass_material)));
 
     const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     return try raytrace.render(allocator, random, camera, surfaces, render_params);
