@@ -216,6 +216,33 @@ pub fn teapotAndBall(allocator: *std.mem.Allocator, render_params: raytrace.Rend
     return raytrace.render(allocator, random, camera, surfaces, render_params);
 }
 
+pub fn goat(allocator: *std.mem.Allocator, render_params: raytrace.RenderParams) ! *Image {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const tmp_allocator = &arena.allocator;
+
+    var prng = std.rand.DefaultPrng.init(42);
+    var random = &prng.random;
+
+    const filename = "./models/high_poly_goat.obj";
+    const model: ArrayList(Surface) = try ObjReader.readObjFile(allocator, filename, &Material.silver_metal);
+    defer model.deinit();
+
+    var surfaces = ArrayList(Surface).init(tmp_allocator);
+    defer surfaces.deinit();
+
+    const top: BaseFloat = -2.33;
+    const radius: BaseFloat = 100.0;
+    const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
+
+    try surfaces.append(Surface.initSphere(Sphere.init(earth_center, radius, &Material.greenMatte(random))));
+    for (model.items) |surface| {
+        try surfaces.append(surface);
+    }
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -1.7), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+
+    return raytrace.render(allocator, random, camera, surfaces, render_params);
+}
 
 
 const SceneError = error {
@@ -229,7 +256,7 @@ pub fn render_scene(allocator: *std.mem.Allocator, render_params: raytrace.Rende
         2 => return bunnyAndBall(allocator, render_params),
         3 => return teapotAndBall(allocator, render_params),
         4 => return teapotAndBallCircle(allocator, render_params),
-
+        5 => return goat(allocator, render_params),
         else => return SceneError.UnkownSceneIndex
     }
 }
