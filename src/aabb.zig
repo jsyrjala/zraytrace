@@ -1,5 +1,6 @@
 //! Axis Aligned Bounding Box
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 const BaseFloat = @import("base.zig").BaseFloat;
 const Vec3 = @import("vector.zig").Vec3;
 const Ray = @import("ray.zig").Ray;
@@ -58,6 +59,16 @@ pub const AABB = struct {
     pub fn initAabb(box1: AABB, box2: AABB) AABB {
         return AABB.initMinMax(minimumVec(box1.min, box2.min),
                                maximumVec(box1.max, box2.max));
+    }
+
+    pub fn initAabbList(allocator: *Allocator, aabb_list: []AABB) anyerror! AABB {
+        var vec_list = ArrayList(Vec3).init(allocator);
+        defer vec_list.deinit();
+        for (aabb_list) |aabb| {
+            try vec_list.append(aabb.min);
+            try vec_list.append(aabb.max);
+        }
+        return initVertexes(vec_list.items);
     }
 
     /// Volume of AABB
@@ -189,6 +200,26 @@ test "AABB.initVertexes()" {
     expectEqual(@as(BaseFloat, 9.), box2.max.z());
 }
 
+test "AABB.initAabbList()" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = &arena.allocator;
+    var list = ArrayList(AABB).init(allocator);
+    defer list.deinit();
+
+    try list.append(AABB.initMinMax(Vec3.init(-10.0,0.0,-3.0), Vec3.init(-3.5, 12.5, -4.0)));
+    try list.append(AABB.initMinMax(Vec3.init(0.0,-7.0,-3.0), Vec3.init(10.5, 2.0, -4.0)));
+    try list.append(AABB.initMinMax(Vec3.init(0.0,0.0,-11.0), Vec3.init(-3.5, 12.0, -1.0)));
+    
+    const box = try AABB.initAabbList(allocator, list.items);
+    expectEqual(@as(BaseFloat, -10.), box.min.x());
+    expectEqual(@as(BaseFloat, -7.), box.min.y());
+    expectEqual(@as(BaseFloat, -11.), box.min.z());
+    expectEqual(@as(BaseFloat, 10.5), box.max.x());
+    expectEqual(@as(BaseFloat, 12.5), box.max.y());
+    expectEqual(@as(BaseFloat, -1.), box.max.z());
+}
+
 test "AABB.volume()" {
     const box = AABB.initMinMax(Vec3.init(0.0,0.0,3.0), Vec3.init(-3.5, 2.0, 4.0));
     expectEqual(@as(BaseFloat, 7.0), box.volume());
@@ -202,11 +233,11 @@ test "AABB.surfaceArea()" {
 test "AABB.hit() ray doesn't hit" {
     const box = AABB.initMinMax(Vec3.init(-1.0, -1.0, -1.0), Vec3.init(1.0, 1.0, 1.0));
     const ray = Ray.init(Vec3.init(-10, 0.0, 0.0), Vec3.init(-1.0, 0.0, 0.0));
-    expectEqual(false, box.hitAabb(ray, 0.0, 100000.0));
+    expectEqual(false, box.hitAabb(&ray, 0.0, 100000.0));
 }
 
 test "AABB.hit() ray hits" {
     const box = AABB.initMinMax(Vec3.init(-1.0, -1.0, -1.0), Vec3.init(1.0, 1.0, 1.0));
     const ray = Ray.init(Vec3.init(-10, 0.0, 0.0), Vec3.init(1.0, 0.0, 0.0));
-    expectEqual(true, box.hitAabb(ray, 0.0, 100000.0));
+    expectEqual(true, box.hitAabb(&ray, 0.0, 100000.0));
 }
