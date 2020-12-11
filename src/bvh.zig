@@ -53,6 +53,22 @@ pub const BVHNode = struct {
         return comparator.*(a, b);
     }
 
+    const AxisDivide = struct {
+        left_surfaces: []*Surface,
+        right_surfaces: []*Surface,
+    };
+
+    inline fn make_axis_divide(axis_index: u8, surfaces: []*Surface) AxisDivide {
+        std.sort.sort(*Surface, surfaces, axis_index, lessThanAxis);
+        const split = surfaces.len / 2;
+        const left_surfaces = surfaces[0..split];
+        const right_surfaces = surfaces[split..];
+        return AxisDivide{
+            .left_surfaces = left_surfaces,
+            .right_surfaces = right_surfaces
+        };
+    }
+
     fn divide(allocator: *Allocator, random: *Random, surfaces: []*Surface, depth: u32, tracking: *Tracking) anyerror ! *Surface {
         std.debug.assert(surfaces.len > 0);
         tracking.update(depth);
@@ -62,30 +78,24 @@ pub const BVHNode = struct {
             return BVHNode.create(allocator, random, surface, surface);
         }
 
-        const axis_index = random.intRangeAtMost(u8, 0, 2);
-
         if (surfaces.len == 2) {
             const surface0 = surfaces[0];
             const surface1 = surfaces[1];
-            if (lessThanAxis(axis_index, surface0, surface0)) {
-                return BVHNode.create(allocator, random, surface0, surface1);
-            }
+            // Does not matter which is left and which is right
             return BVHNode.create(allocator, random, surface1, surface0);
         }
-        std.sort.sort(*Surface, surfaces, axis_index, lessThanAxis);
-        const split = surfaces.len / 2;
-        const left_surfaces = surfaces[0..split];
-        const right_surfaces = surfaces[split..];
+        const axis_index = random.intRangeAtMost(u8, 0, 2);
+        const axis_divide = make_axis_divide(axis_index, surfaces);
 
         // TODO
         // compute sum of AABB surface areas for coordinate splits
         // use the one that has smallest sum
         // http://www.pbr-book.org/3ed-2018/Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#TheSurfaceAreaHeuristic
 
-        std.debug.assert(surfaces.len == left_surfaces.len + right_surfaces.len);
+        std.debug.assert(surfaces.len == axis_divide.left_surfaces.len + axis_divide.right_surfaces.len);
 
-        const left = try divide(allocator, random, surfaces[0..split], depth + 1, tracking);
-        const right = try divide(allocator, random, surfaces[split..], depth + 1, tracking);
+        const left = try divide(allocator, random, axis_divide.left_surfaces, depth + 1, tracking);
+        const right = try divide(allocator, random, axis_divide.right_surfaces, depth + 1, tracking);
         return BVHNode.create(allocator, random, left, right);
     }
 

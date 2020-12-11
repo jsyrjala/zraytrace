@@ -155,6 +155,7 @@ pub fn render(allocator: *Allocator, random: *Random,
 
     var color_acc = Color.newBlack();
     const color_scale = 1.0 / @intToFloat(f32, render_params.samples_per_pixel);
+    const render_start_time = std.time.milliTimestamp();
 
     // loop over every pixel on the screen
     var y: usize = 0;
@@ -183,7 +184,9 @@ pub fn render(allocator: *Allocator, random: *Random,
         progress_prev = progress;
         progress.scanline_start_time = std.time.milliTimestamp();
     }
-    const runtime = @intToFloat(f32, std.time.milliTimestamp() - progress.start_time) / 1000.0;
+    const end_time = std.time.milliTimestamp();
+    const render_runtime = @intToFloat(f32, end_time - render_start_time) / 1000.0; 
+    const runtime = @intToFloat(f32, end_time - progress.start_time) / 1000.0;
     std.debug.warn("Rendering ready\n", .{});
     std.debug.warn("  Total reflections:     {}\n", .{progress.reflections});
     std.debug.warn("  Total background hits: {}\n", .{progress.background_hits});
@@ -193,6 +196,7 @@ pub fn render(allocator: *Allocator, random: *Random,
     std.debug.warn("  Total reflections:     {}\n", .{progress.reflections});
     std.debug.warn("  Pixels per second:     {d:0.2} pixels/s\n", .{@intToFloat(f32, progress.pixels_processed) / runtime});
     std.debug.warn("  Total runtime:         {d:0.2} seconds\n", .{runtime});
+    std.debug.warn("  Render runtime:        {d:0.2} seconds\n", .{render_runtime});
     return image;
 }
 
