@@ -148,7 +148,6 @@ pub fn render(allocator: *Allocator, random: *Random,
     std.debug.warn(" - Bounded volume hierarchy: {}\n", .{render_params.bounded_volume_hierarchy});
 
     const processed_surfaces = try preprocessSufraces(allocator, random, surfaces, render_params);
-
     var image = try Image.init(allocator, render_params.width, render_params.height);
 
     const f_width = @intToFloat(BaseFloat, render_params.width);
@@ -157,6 +156,7 @@ pub fn render(allocator: *Allocator, random: *Random,
     var color_acc = Color.newBlack();
     const color_scale = 1.0 / @intToFloat(f32, render_params.samples_per_pixel);
     const render_start_time = std.time.milliTimestamp();
+    std.debug.warn("Preprocess time: {d:0.2} seconds\n", .{@intToFloat(f32, render_start_time - start_time) / 1000.0});
 
     // loop over every pixel on the screen
     var y: usize = 0;
@@ -186,7 +186,7 @@ pub fn render(allocator: *Allocator, random: *Random,
         progress.scanline_start_time = std.time.milliTimestamp();
     }
     const end_time = std.time.milliTimestamp();
-    const render_runtime = @intToFloat(f32, end_time - render_start_time) / 1000.0; 
+    const render_runtime = @intToFloat(f32, end_time - render_start_time) / 1000.0;
     const runtime = @intToFloat(f32, end_time - progress.start_time) / 1000.0;
     std.debug.warn("Rendering ready\n", .{});
     std.debug.warn("  Total reflections:     {}\n", .{progress.reflections});

@@ -80,25 +80,44 @@ pub const BVHNode = struct {
 
     /// Split surfaces evenly on the axis that gives the smallest surface area for the AABBs
     /// http://www.pbr-book.org/3ed-2018/Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#TheSurfaceAreaHeuristic
+    /// TODO this splits by items, densely populated areas get more splits, would be better to split by dividing space
+    ///       to buckets
     fn optimal_axis_divide(allocator: *Allocator, surfaces: []*Surface) !SurfaceDivide {
         // Try splitting with every axis, and use the best one
         var best_axis_index: u8 = 0;
         var best_area: f32 = std.math.inf(f32);
+        var best_ratio: f32 = std.math.inf(f32);
+        var best_split = surfaces.len / 2;
+
+        const total_aabb = try surfaces_to_aabb(allocator, surfaces);
+        const total_area = total_aabb.surfaceArea();
+
+        var splits: []usize = &[_]usize{surfaces.len / 2};
+        if (surfaces.len >= 4) {
+            splits = &[_]usize{surfaces.len / 4, surfaces.len / 2, surfaces.len / 4 + surfaces.len / 2};
+        }
+
         var axis_index: u8 = 0;
-        var split = surfaces.len / 2;
-        while (axis_index < 3) : (axis_index += 1) {
-            const axis_divide = make_axis_divide(axis_index, surfaces, split);
-            const right_aabb = try surfaces_to_aabb(allocator, axis_divide.right_surfaces);
-            const left_aabb = try surfaces_to_aabb(allocator, axis_divide.left_surfaces);
-            const area = right_aabb.surfaceArea() + left_aabb.surfaceArea();
-            if (area < best_area) {
-                best_area = area;
-                best_axis_index = axis_index;
+        for (splits) |split| {
+            while (axis_index < 3) : (axis_index += 1) {
+                const axis_divide = make_axis_divide(axis_index, surfaces, split);
+                const right_aabb = try surfaces_to_aabb(allocator, axis_divide.right_surfaces);
+                const left_aabb = try surfaces_to_aabb(allocator, axis_divide.left_surfaces);
+                const area = right_aabb.surfaceArea() + left_aabb.surfaceArea();
+                const ratio = area / total_area;
+                if (ratio < best_ratio) {
+                    best_area = area;
+                    best_ratio = ratio;
+                    best_axis_index = axis_index;
+                    best_split = split;
+                }
             }
+            std.debug.warn("", .{});
         }
         // redo the best split
-        const axis_divide = make_axis_divide(best_axis_index, surfaces, split);
-        return axis_divide;
+        // TODO this might make a different split if the sort is not stable
+        // TODO better would be store sorts to different buffers, and not touch the originals
+        return make_axis_divide(best_axis_index, surfaces, best_split);
     }
 
     /// Split surfaces evenly on randomly selected axis
