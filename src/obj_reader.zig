@@ -24,7 +24,7 @@ fn parseFaceVertex(line: []const u8) ! FaceVertex {
     // 1/1/1 2/2/2 3/3/3 => vertex index/texture coordinate index/vertex normal index
     // 1//1 2//2 3//3 => vertex index//vertex normal index
     // faces refer to vertex indexes
-    var splitter = std.mem.tokenize(line, "/");
+    var splitter = std.mem.tokenize(u8, line, "/");
     
     const v: u64 = try std.fmt.parseInt(u64, splitter.next() orelse "", 10);
     const texture_index = splitter.next();
@@ -149,7 +149,7 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
             line = line[0..line.len - 1];
         }
         if (line[0] == 'v' and line[1] == ' ') {
-            var splitter = std.mem.tokenize(line, " ");
+            var splitter = std.mem.tokenize(u8, line, " ");
             // eat "v" from the start
             _ = splitter.next();
             const x:f32 = try std.fmt.parseFloat(f32, splitter.next() orelse "");
@@ -158,7 +158,7 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
             const vec = Vec3.init(x,y,z);
             try vertexes.append(vec);
         } else if (line[0] == 'f' and line[1] == ' ') {
-            var splitter = std.mem.tokenize(line, " ");
+            var splitter = std.mem.tokenize(u8, line, " ");
             // eat "f" from the start
             _ = splitter.next();
             var face_vertexes = ArrayList(FaceVertex).init(tmp_allocator);
@@ -174,7 +174,7 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
             }
             face_count += 1;
         } else if (line[0] == 'v' and line[1] == 'n' and line[2] == ' ') {
-            var splitter = std.mem.tokenize(line, " ");
+            var splitter = std.mem.tokenize(u8, line, " ");
             // eat "vn" from the start
             _ = splitter.next();
             const x:f32 = try std.fmt.parseFloat(f32, splitter.next() orelse "");

@@ -5,7 +5,7 @@ const math = std.math;
 const ArrayList = std.ArrayList;
 const BaseFloat = @import("base.zig").BaseFloat;
 const Vec3 = @import("vector.zig").Vec3;
-usingnamespace @import("ray.zig");
+const Ray = @import("ray.zig").Ray;
 const img = @import("image.zig");
 const Image = img.Image;
 const Color = img.Color;
@@ -14,7 +14,7 @@ const Camera = @import("camera.zig").Camera;
 const Material = @import("material.zig").Material;
 const Texture = @import("texture.zig").Texture;
 const Surface = @import("surface.zig").Surface;
-usingnamespace @import("bvh.zig");
+const BVHNode = @import("bvh.zig").BVHNode;
 
 
 const Progress = struct {

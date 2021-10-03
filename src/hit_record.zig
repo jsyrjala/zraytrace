@@ -44,8 +44,8 @@ pub const HitRecord = struct {
         _ = fmt;
         _ = options;
         return std.fmt.format(writer, "HitRecord(Location({},{},{}),Normal({},{},{}),t={},front_face={})",
-                            .{self.location.x(), self.location.y(), location.z(),
-                              self.normal.x(), self.normal.y(), normal.z(),
+                            .{self.location.x(), self.location.y(), self.location.z(),
+                              self.normal.x(), self.normal.y(), self.normal.z(),
                               self.t, self.front_face});
     }
 };

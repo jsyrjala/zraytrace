@@ -8,13 +8,13 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const Random = std.rand.Random;
-usingnamespace @import("sample.zig");
-usingnamespace @import("base.zig");
-usingnamespace @import("aabb.zig");
-usingnamespace @import("vector.zig");
-usingnamespace @import("surface.zig");
-usingnamespace @import("ray.zig");
-usingnamespace @import("hit_record.zig");
+const Sample = @import("sample.zig").Sample;
+const BaseFloat = @import("base.zig").BaseFloat;
+const AABB = @import("aabb.zig").AABB;
+const Vec3 = @import("vector.zig").Vec3;
+const Surface = @import("surface.zig").Surface;
+const Ray = @import("ray.zig").Ray;
+const HitRecord = @import("hit_record.zig").HitRecord;
 
 // TODO compact array based layout
 // http://www.pbr-book.org/3ed-2018/Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#CompactBVHForTraversal

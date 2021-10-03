@@ -5,8 +5,8 @@ const Vec3 = @import("vector.zig").Vec3;
 const Ray = @import("ray.zig").Ray;
 const HitRecord = @import("hit_record.zig").HitRecord;
 const Material = @import("material.zig").Material;
-usingnamespace @import("aabb.zig");
-usingnamespace @import("bvh.zig");
+const AABB = @import("aabb.zig").AABB;
+const BVHNode = @import("bvh.zig").BVHNode;
 
 /// Surface is a "supertype" for all surfaces.
 pub const Surface = union (enum) {

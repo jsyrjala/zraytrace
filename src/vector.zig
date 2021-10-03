@@ -141,7 +141,7 @@ pub const Vec3 = struct {
     /// Copy allocate storage and copy vector.
     pub inline fn copy(allocator: *Allocator, v:Vec3) !*Vec3 {
         const new_vec3 = try allocator.create(Vec3);
-        new_vew.* = v;
+        new_vec3.* = v;
         return new_vec3;
     }
 
