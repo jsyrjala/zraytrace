@@ -12,7 +12,7 @@ pub const Vec2 = struct {
     u: BaseFloat,
     v: BaseFloat,
 
-    pub const origin = Vec2.init(0., 0.);
+    pub const origin = Vec2.init(0.0, 0.0);
 
     pub inline fn init(_u: BaseFloat, _v: BaseFloat) Vec2 {
         return Vec2{.u = _u, .v = _v};
@@ -24,10 +24,10 @@ pub const Vec3 = struct {
     _y: BaseFloat,
     _z: BaseFloat,
 
-    pub const origin = Vec3.init(0., 0., 0.);
-    pub const x_unit = Vec3.init(1., 0., 0.);
-    pub const y_unit = Vec3.init(0., 1., 0.);
-    pub const z_unit = Vec3.init(0., 0., 1.);
+    pub const origin = Vec3.init(0.0, 0.0, 0.0);
+    pub const x_unit = Vec3.init(1.0, 0.0, 0.0);
+    pub const y_unit = Vec3.init(0.0, 1.0, 0.0);
+    pub const z_unit = Vec3.init(0.0, 0.0, 1.0);
 
     pub inline fn elem(v: Vec3, index: u8) BaseFloat {
         switch (index) {

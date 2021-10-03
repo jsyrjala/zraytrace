@@ -46,7 +46,7 @@ pub const Sample = struct {
         const r1: BaseFloat = random.float(BaseFloat);
         const r2: BaseFloat = random.float(BaseFloat);
         const r = math.sqrt(@as(BaseFloat, 1.0) - r1 * r1);
-        const phi = 2. *  math.pi * r2;
+        const phi = 2.0 *  math.pi * r2;
         return Vec3.init(math.cos(phi) * r, math.sin(phi) * r, r1);
     }
 

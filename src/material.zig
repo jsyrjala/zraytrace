@@ -41,7 +41,7 @@ pub const Material = union (enum) {
 // TODO use pointers
     /// Find the right material type and call it's scatter method
     pub inline fn scatter(material: Material, ray: *const Ray, hit_record: HitRecord) ?Scattering {
-        const enum_fields = comptime std.meta.fields(@TagType(Material));
+        const enum_fields = comptime std.meta.fields(std.meta.Tag(Material));
         inline for (std.meta.fields(Material)) |field, i| {
             if (@enumToInt(material) == enum_fields[i].value) {
                 return @field(material, field.name).scatter(ray, hit_record);
@@ -124,7 +124,6 @@ pub const Dielectric = struct {
 
     fn reflectance(cosine: BaseFloat, ref_idx: BaseFloat) f64 {
         const r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
-        const r0_cubed = r0 * r0;
         return r0 + (1.0 - r0) * std.math.pow(BaseFloat, 1 - cosine, 5.0);
     }
 };

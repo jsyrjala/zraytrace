@@ -144,18 +144,18 @@ test "Color.add()" {
 }
 
 test "Color.addMutate()" {
-    const color1 = Color.init(1., 2., 6.);
-    const gray = Color.init(1., 1., 1.);
-    var color2 = Color.init(1., 2., 6.);
+    const color1 = Color.init(1.0, 2.0, 6.0);
+    const gray = Color.init(1.0, 1.0, 1.0);
+    var color2 = Color.init(1.0, 2.0, 6.0);
     const black = Color.newBlack();
 
     Color.addMutate(&color2, black);
     expectEqual(color1, color2);
 
     Color.addMutate(&color2, gray);
-    expectEqual(Color.init(2., 3., 7.), color2);
+    expectEqual(Color.init(2.0, 3.0, 7.0), color2);
 
     // zig automatically takes a pointer to color2
     color2.addMutate(color1);
-    expectEqual(Color.init(3., 5., 13.), color2);
+    expectEqual(Color.init(3.0, 5.0, 13.0), color2);
 }

@@ -112,13 +112,13 @@ fn parseTriangles(allocator: *Allocator, material: *const Material,
 
 /// ReadObj file to a List of surfaces
 pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const Material) !ArrayList(Surface) {
-    std.debug.warn("Reading OBJ model from {}\n", .{filename});
+    std.debug.warn("Reading OBJ model from {s}\n", .{filename});
     // this the return value from the function, not freeing it here
     var surfaces = ArrayList(Surface).init(allocator);
 
     const file = try std.fs.cwd().openFile(filename, .{.read = true});
     defer file.close();
-    const input = file.inStream();
+    const input = file.reader();
 
     // TODO vertexes, faces, normals should be freed,
     // final surface list should not be freed
@@ -169,7 +169,7 @@ pub fn readObjFile(allocator: *Allocator, filename: []const u8, material: *const
             }
 
             const triangles = try parseTriangles(tmp_allocator, material, &vertexes, &face_vertexes);
-            for (triangles.items) |triangle, i| {
+            for (triangles.items) |triangle| {
                 try surfaces.append(Surface.initTriangle(triangle));
             }
             face_count += 1;
@@ -204,7 +204,7 @@ test "read_obj_file Man.obj" {
     const allocator = &arena.allocator;
 
     const filename = "./models/man/Man.obj";
-    const surfaces = try readObjFile(allocator, filename, &Material.silver_metal);
+    _ = try readObjFile(allocator, filename, &Material.silver_metal);
 }
 
 test "read_obj_file bunny.obj" {
@@ -213,7 +213,7 @@ test "read_obj_file bunny.obj" {
     const allocator = &arena.allocator;
 
     const filename = "./models/bunny/bunny.obj";
-    const surfaces = try readObjFile(allocator, filename, &Material.silver_metal);
+    _ = try readObjFile(allocator, filename, &Material.silver_metal);
 }
 
 test "read_obj_file teapot.obj" {
@@ -222,5 +222,5 @@ test "read_obj_file teapot.obj" {
     const allocator = &arena.allocator;
 
     const filename = "./models/teapot/teapot.obj";
-    const surfaces = try readObjFile(allocator, filename, &Material.silver_metal);
+    _ = try readObjFile(allocator, filename, &Material.silver_metal);
 }

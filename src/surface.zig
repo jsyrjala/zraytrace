@@ -49,7 +49,7 @@ pub const Surface = union (enum) {
 
     // other way to do polymorphism, code should be about identical in this and above
     pub inline fn aabb(surface: *const Surface) AABB {
-        const enum_fields = comptime std.meta.fields(@TagType(Surface));
+        const enum_fields = comptime std.meta.fields(std.meta.Tag(Surface));
         inline for (std.meta.fields(Surface)) |field, i| {
             if (@enumToInt(surface.*) == enum_fields[i].value) {
                 return @field(surface.*, field.name).aabb;

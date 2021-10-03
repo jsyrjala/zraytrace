@@ -36,7 +36,7 @@ const Progress = struct {
 /// Print progress to stdout
 fn printProgress(scanline: u64, total_scanlines: u64, progress: *Progress, progress_prev: *Progress) void {
     const pixel_change = progress.pixels_processed - progress_prev.pixels_processed;
-    const time_diff = @intToFloat(f32, std.time.milliTimestamp() - progress.scanline_start_time) / 1000.;
+    const time_diff = @intToFloat(f32, std.time.milliTimestamp() - progress.scanline_start_time) / 1000.0;
     const pixels_per_second = @intToFloat(f32, pixel_change) / time_diff;
     std.debug.warn("Scanline: {}/{} Pixels: {} Samples: {} Rays: {} Recursion limit: {} Reflections: {} Background hits: {} Pixels/s: {d:0.1}\n",
                    .{
@@ -72,7 +72,7 @@ fn rayColor(ray: *const Ray, surfaces: ArrayList(Surface), depth: u32, progress:
     var t_max = math.inf(BaseFloat);
     var closest_hit: ?HitRecord = null;
     // loop over the surfaces and check if the ray hits any of them
-    for (surfaces.items) |*surface, index| {
+    for (surfaces.items) |*surface| {
         const current_hit_record = surface.hit(ray, t_min, t_max);
         if (current_hit_record != null) {
             closest_hit = current_hit_record.?;
@@ -212,7 +212,7 @@ const Lambertian = @import("material.zig").Lambertian;
 const Sphere = @import("sphere.zig").Sphere;
 
 test "Render something" {
-    const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -7.0), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = &arena.allocator;
@@ -224,24 +224,24 @@ test "Render something" {
 
     const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.gold)));
     const green_matte = Material.greenMatte(random);
-    const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initColor(Color.init(0.5, 0., 0.5))));
+    const purple_matte = Material.initLambertian(Lambertian.init(random, Texture.initColor(Color.init(0.5, 0.0, 0.5))));
 
     // TODO this copies the materials with objects
     try objects.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), 2.0, &gold_metal)));
-    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(3., 1, 4.0), 1.0, &purple_matte)));
-    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(1., 102.5, 4.0), 100.0, &green_matte)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(3.0, 1, 4.0), 1.0, &purple_matte)));
+    try objects.append(Surface.initSphere(Sphere.init(Vec3.init(1.0, 102.5, 4.0), 100.0, &green_matte)));
 
     const render_params = RenderParams{.width = 20, .height = 20, .samples_per_pixel = 5, .max_depth = 5,
                                         .bounded_volume_hierarchy = false};
     const scene_image = try render(allocator, random, camera, objects, render_params);
     defer scene_image.deinit();
-    const foo = ppm_image.writeFile("./target/render_test.ppm", scene_image);
+    _ = ppm_image.writeFile("./target/render_test.ppm", scene_image);
 }
 
 const ObjReader = @import("obj_reader.zig");
 
 test "Render Man model" {
-    const camera = Camera.init(Vec3.init(0.0, 0.0, -30.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -30.0), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = &arena.allocator;
@@ -267,5 +267,5 @@ test "Render Man model" {
                                         .bounded_volume_hierarchy = true};
     const scene_image = try render(allocator, random, camera, objects, render_params);
     defer scene_image.deinit();
-    const foo = ppm_image.writeFile("./target/render_man.ppm", scene_image);
+    _ = ppm_image.writeFile("./target/render_man.ppm", scene_image);
 }

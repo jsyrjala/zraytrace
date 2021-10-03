@@ -47,7 +47,7 @@ pub fn manAndBall(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
     for (man_model.items) |surface| {
         try surfaces.append(surface);
     }
-    const camera = Camera.init(Vec3.init(0.0, 0.0, -30.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -30.0), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     return raytrace.render(allocator, random, camera, surfaces, render_params);
 }
 
@@ -80,11 +80,11 @@ pub fn threeBalls(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
 
     const earth_material = Material.initMetal(Metal.init(Texture.initImage(earthmap_image)));
     
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1., -102.5, 4.0), 100.0, &green_matte)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(1.0, -102.5, 4.0), 100.0, &green_matte)));
 
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(8), 2.0, &nitor_material)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-3., -1.5, 3.0), 1.0, &mirror_material)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.5, &earth_material)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-3.0, -1.5, 3.0), 1.0, &mirror_material)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3.0, -1, 4.0), 1.5, &earth_material)));
     
     // filled glass
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(-1, -1, 2.0), 0.7, &glass_material)));
@@ -95,7 +95,7 @@ pub fn threeBalls(allocator: *std.mem.Allocator, render_params: raytrace.RenderP
     try surfaces.append(Surface.initSphere(Sphere.init(buble_center, radius, &glass_material)));
     try surfaces.append(Surface.initSphere(Sphere.init(buble_center, -(radius - thickness), &glass_material)));
 
-    const camera = Camera.init(Vec3.init(0.0, 0.0, -7.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -7.0), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     return try raytrace.render(allocator, random, camera, surfaces, render_params);
 }
 
@@ -177,8 +177,8 @@ pub fn teapotAndBallCircle(allocator: *std.mem.Allocator, render_params: raytrac
     var surfaces = ArrayList(Surface).init(tmp_allocator);
     defer surfaces.deinit();
 
-    const gold_metal = Material.initMetal(Metal.init(Texture.initColor(Color.gold)));
-    const green_matte = Material.greenMatte(random);
+    _ = Material.initMetal(Metal.init(Texture.initColor(Color.gold)));
+    _ = Material.greenMatte(random);
 
     const earthmap_image = try png_image.readFile(tmp_allocator, "./models/images/earthmap.png");
 
@@ -193,13 +193,13 @@ pub fn teapotAndBallCircle(allocator: *std.mem.Allocator, render_params: raytrac
     const earth_center = Vec3.init(1.66445508e-01, top - radius, 7.37018966e+00);
 
     try surfaces.append(Surface.initSphere(Sphere.init(Vec3.z_unit.scale(6), -2.0, &Material.silver_metal)));
-    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3., -1, 4.0), 1.0, &purple_matte)));
+    try surfaces.append(Surface.initSphere(Sphere.init(Vec3.init(3.0, -1, 4.0), 1.0, &purple_matte)));
 
     try surfaces.append(Surface.initSphere(Sphere.init(earth_center, radius, &Material.greenMatte(random))));
     for (model.items) |surface| {
         try surfaces.append(surface);
     }
-    const camera = Camera.init(Vec3.init(-8.0, 0.0, -10.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    const camera = Camera.init(Vec3.init(-8.0, 0.0, -10.0), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     return raytrace.render(allocator, random, camera, surfaces, render_params);
 }
 
@@ -227,7 +227,7 @@ pub fn teapotAndBall(allocator: *std.mem.Allocator, render_params: raytrace.Rend
     for (man_model.items) |surface| {
         try surfaces.append(surface);
     }
-    const camera = Camera.init(Vec3.init(0.0, 0.0, -10.), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
+    const camera = Camera.init(Vec3.init(0.0, 0.0, -10.0), Vec3.z_unit, Vec3.y_unit, 45.0, 1.0);
     return raytrace.render(allocator, random, camera, surfaces, render_params);
 }
 

@@ -29,7 +29,7 @@ pub fn readFile(allocator: *Allocator, filename: []const u8) anyerror! *Image {
 
     const fp = c.fopen(@ptrCast([*c]const u8, filename), "rb");
     if (fp == null) {
-        std.debug.warn("Can't open file {}", .{filename});
+        std.debug.warn("Can't open file {s}", .{filename});
         return PngError.FailedToOpenFile;
     }
 
@@ -40,7 +40,7 @@ pub fn readFile(allocator: *Allocator, filename: []const u8) anyerror! *Image {
     const color_type = c.png_get_color_type(png, info);
     const bit_depth  = c.png_get_bit_depth(png, info);
 
-    std.debug.warn("PNG data {} {}x{} color_type={} bits={}\n", .{filename, width, height, color_type, bit_depth});
+    std.debug.warn("PNG data {s} {}x{} color_type={} bits={}\n", .{filename, width, height, color_type, bit_depth});
     if (color_type != c.PNG_COLOR_TYPE_RGB and color_type != c.PNG_COLOR_TYPE_RGBA) {
         std.debug.warn("Unsupported color type {}\n", .{color_type});
         return PngError.UnsupportedPngFeature;
@@ -96,7 +96,7 @@ pub fn readFile(allocator: *Allocator, filename: []const u8) anyerror! *Image {
 pub fn writeFile(allocator: *Allocator, filename: []const u8, image: *Image) anyerror! void {
     const fp = c.fopen(@ptrCast([*c]const u8, filename), "wb");
     if (fp == null) {
-        std.debug.warn("Can't open file {}", .{filename});
+        std.debug.warn("Can't open file {s}", .{filename});
         return PngError.FailedToOpenFile;
     }
 

@@ -15,7 +15,7 @@ pub fn build(b: *Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.linkLibC();
-    // exe.addIncludeDir("/usr/local/include");
+    exe.addIncludeDir("/usr/local/include");
     exe.linkSystemLibrary("png");
     exe.install();
 

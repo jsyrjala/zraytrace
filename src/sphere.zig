@@ -42,7 +42,7 @@ pub const Sphere = struct {
         const t1 = -half_b - root;
         if (t1 < t_max and t1 > t_min) {
             const location = ray.rayAt(t1);
-            const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
+            const outward_normal = location.minus(sphere.center).scale(1.0/sphere.radius);
             // calculate texture coordinates
             const theta = std.math.acos(-outward_normal.y());
             const phi = std.math.atan2(BaseFloat, - outward_normal.z(), - outward_normal.x()) + std.math.pi;
@@ -56,7 +56,7 @@ pub const Sphere = struct {
         const t2 = -half_b + root;
         if (t2 < t_max and t2 > t_min) {
             const location = ray.rayAt(t2);
-            const outward_normal = location.minus(sphere.center).scale(1./sphere.radius);
+            const outward_normal = location.minus(sphere.center).scale(1.0/sphere.radius);
             // calculate texture coordinates
             const theta = std.math.acos(-outward_normal.y());
             const phi = std.math.atan2(BaseFloat, - outward_normal.z(), - outward_normal.x()) + std.math.pi;

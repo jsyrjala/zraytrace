@@ -95,7 +95,7 @@ test "Triangle.hit() ray doesn't hit the triangle" {
 }
 
 test "Triangle.hit() ray hits the triangle" {
-    const a = Vec3.init(10., 5., 1.0);
+    const a = Vec3.init(10.0, 5.0, 1.0);
     const b = Vec3.init(-10.0, -10.0, 1.0);
     const c = Vec3.init(-10.0, 10.0, 1.0);
     const triangle = Triangle.init(a, b, c, &Material.black_metal);

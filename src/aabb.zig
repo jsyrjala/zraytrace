@@ -147,37 +147,37 @@ const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
 
 test "AABB.initMinMax()" {
-    const vec1 = Vec3.init(-1., 2., 3.);
-    const vec2 = Vec3.init(4., -3., 7.);
+    const vec1 = Vec3.init(-1.0, 2.0, 3.0);
+    const vec2 = Vec3.init(4.0, -3.0, 7.0);
     const box1 = AABB.initMinMax(vec1, vec2);
     const box2 = AABB.initMinMax(vec2, vec1);
     expectEqual(box1, box2);
-    expectEqual(@as(BaseFloat, -1.), box1.min.x());
-    expectEqual(@as(BaseFloat, -3.), box1.min.y());
-    expectEqual(@as(BaseFloat, 3.), box1.min.z());
-    expectEqual(@as(BaseFloat, 4.), box1.max.x());
-    expectEqual(@as(BaseFloat, 2.), box1.max.y());
-    expectEqual(@as(BaseFloat, 7.), box1.max.z());
+    expectEqual(@as(BaseFloat, -1.0), box1.min.x());
+    expectEqual(@as(BaseFloat, -3.0), box1.min.y());
+    expectEqual(@as(BaseFloat, 3.0), box1.min.z());
+    expectEqual(@as(BaseFloat, 4.0), box1.max.x());
+    expectEqual(@as(BaseFloat, 2.0), box1.max.y());
+    expectEqual(@as(BaseFloat, 7.0), box1.max.z());
 }
 
 test "AABB.initAabb()" {
-    const vec11 = Vec3.init(-1., 2., 3.);
-    const vec12 = Vec3.init(4., -3., 7.);
+    const vec11 = Vec3.init(-1.0, 2.0, 3.0);
+    const vec12 = Vec3.init(4.0, -3.0, 7.0);
     const box1 = AABB.initMinMax(vec11, vec12);
-    const vec21 = Vec3.init(7., 1., 11.);
-    const vec22 = Vec3.init(0., -3., -2.);
+    const vec21 = Vec3.init(7.0, 1.0, 11.0);
+    const vec22 = Vec3.init(0.0, -3.0, -2.0);
     const box2 = AABB.initMinMax(vec21, vec22);
 
     const box12 = AABB.initAabb(box1, box2);
     const box21 = AABB.initAabb(box2, box1);
 
     expectEqual(box12, box21);
-    expectEqual(@as(BaseFloat, -1.), box12.min.x());
-    expectEqual(@as(BaseFloat, -3.), box12.min.y());
-    expectEqual(@as(BaseFloat, -2.), box12.min.z());
-    expectEqual(@as(BaseFloat, 7.), box12.max.x());
-    expectEqual(@as(BaseFloat, 2.), box12.max.y());
-    expectEqual(@as(BaseFloat, 11.), box12.max.z());
+    expectEqual(@as(BaseFloat, -1.0), box12.min.x());
+    expectEqual(@as(BaseFloat, -3.0), box12.min.y());
+    expectEqual(@as(BaseFloat, -2.0), box12.min.z());
+    expectEqual(@as(BaseFloat, 7.0), box12.max.x());
+    expectEqual(@as(BaseFloat, 2.0), box12.max.y());
+    expectEqual(@as(BaseFloat, 11.0), box12.max.z());
 }
 
 test "AABB.initVertexes()" {
@@ -187,26 +187,26 @@ test "AABB.initVertexes()" {
     var list = ArrayList(Vec3).init(allocator);
     defer list.deinit();
 
-    try list.append(Vec3.init(-2., 0., 9.));
-    try list.append(Vec3.init(1., 7., 2.));
+    try list.append(Vec3.init(-2.0, 0.0, 9.0));
+    try list.append(Vec3.init(1.0, 7.0, 2.0));
     const box1 = AABB.initVertexes(list.items);
-    expectEqual(@as(BaseFloat, -2.), box1.min.x());
-    expectEqual(@as(BaseFloat, 0.), box1.min.y());
-    expectEqual(@as(BaseFloat, 2.), box1.min.z());
-    expectEqual(@as(BaseFloat, 1.), box1.max.x());
-    expectEqual(@as(BaseFloat, 7.), box1.max.y());
-    expectEqual(@as(BaseFloat, 9.), box1.max.z());
+    expectEqual(@as(BaseFloat, -2.0), box1.min.x());
+    expectEqual(@as(BaseFloat, 0.0), box1.min.y());
+    expectEqual(@as(BaseFloat, 2.0), box1.min.z());
+    expectEqual(@as(BaseFloat, 1.0), box1.max.x());
+    expectEqual(@as(BaseFloat, 7.0), box1.max.y());
+    expectEqual(@as(BaseFloat, 9.0), box1.max.z());
 
-    try list.append(Vec3.init(3., 0., -2.));
-    try list.append(Vec3.init(-1., 2., 2.));
-    try list.append(Vec3.init(9., -1., 7.));
+    try list.append(Vec3.init(3.0, 0.0, -2.0));
+    try list.append(Vec3.init(-1.0, 2.0, 2.0));
+    try list.append(Vec3.init(9.0, -1.0, 7.0));
     const box2 = AABB.initVertexes(list.items);
-    expectEqual(@as(BaseFloat, -2.), box2.min.x());
-    expectEqual(@as(BaseFloat, -1.), box2.min.y());
-    expectEqual(@as(BaseFloat, -2.), box2.min.z());
-    expectEqual(@as(BaseFloat, 9.), box2.max.x());
-    expectEqual(@as(BaseFloat, 7.), box2.max.y());
-    expectEqual(@as(BaseFloat, 9.), box2.max.z());
+    expectEqual(@as(BaseFloat, -2.0), box2.min.x());
+    expectEqual(@as(BaseFloat, -1.0), box2.min.y());
+    expectEqual(@as(BaseFloat, -2.0), box2.min.z());
+    expectEqual(@as(BaseFloat, 9.0), box2.max.x());
+    expectEqual(@as(BaseFloat, 7.0), box2.max.y());
+    expectEqual(@as(BaseFloat, 9.0), box2.max.z());
 }
 
 test "AABB.initAabbList()" {
@@ -221,12 +221,12 @@ test "AABB.initAabbList()" {
     try list.append(AABB.initMinMax(Vec3.init(0.0,0.0,-11.0), Vec3.init(-3.5, 12.0, -1.0)));
     
     const box = try AABB.initAabbList(allocator, list.items);
-    expectEqual(@as(BaseFloat, -10.), box.min.x());
-    expectEqual(@as(BaseFloat, -7.), box.min.y());
-    expectEqual(@as(BaseFloat, -11.), box.min.z());
+    expectEqual(@as(BaseFloat, -10.0), box.min.x());
+    expectEqual(@as(BaseFloat, -7.0), box.min.y());
+    expectEqual(@as(BaseFloat, -11.0), box.min.z());
     expectEqual(@as(BaseFloat, 10.5), box.max.x());
     expectEqual(@as(BaseFloat, 12.5), box.max.y());
-    expectEqual(@as(BaseFloat, -1.), box.max.z());
+    expectEqual(@as(BaseFloat, -1.0), box.max.z());
 }
 
 test "AABB.volume()" {

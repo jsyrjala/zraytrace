@@ -45,7 +45,7 @@ fn writeImageData(filename: []const u8, file: std.fs.File, image: *Image) ! u32 
     // need to flush here, closing file will not flush
     try buf_stream.flush();
     const end_time = std.time.milliTimestamp();
-    const elapsed = @intToFloat(f32, end_time - start_time) / 1000.;
+    const elapsed = @intToFloat(f32, end_time - start_time) / 1000.0;
     const pixels_per_second = @intToFloat(f32, image.height * image.width) / elapsed;
     // std.debug.warn("Writing took {d:0.2} seconds, {d:0.2} pixel/s\n", .{elapsed, pixels_per_second});
     return 0;

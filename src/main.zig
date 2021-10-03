@@ -32,5 +32,5 @@ pub fn main() ! void {
                                         .bounded_volume_hierarchy = true};
     const scene_image = try scenes.render_scene(alloc, render_params, scene_index);
     defer scene_image.deinit();
-    const foo = png_image.writeFile(alloc, filename, scene_image);
+    _ = try png_image.writeFile(alloc, filename, scene_image);
 }
