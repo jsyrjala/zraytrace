@@ -34,6 +34,8 @@ pub const ColorTexture = struct {
         return ColorTexture{.color = color};
     }
     pub fn albedo(self: @This(), texture_coords: Vec2, point: Vec3) Color {
+        _ = texture_coords;
+        _ = point;
         return self.color;
     }
 };

@@ -16,6 +16,8 @@ pub const Ray = struct {
     }
 
     pub fn format(self: Ray, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        _ = fmt;
+        _ = options;
         return std.fmt.format(writer, "Ray(Origin({},{},{}),Direction({},{},{}))",
                             .{self.origin.x(), self.origin.y(), self.origin.z(),
                               self.direction.x(), self.direction.y(), self.direction.z(),});

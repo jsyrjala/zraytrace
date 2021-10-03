@@ -40,6 +40,8 @@ pub const Vec3 = struct {
 
     /// Used when printing struct
     pub fn format(self: Vec3, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        _ = fmt;
+        _ = options;
         return std.fmt.format(writer, "Vec3({d:0.3},{d:0.3},{d:0.3})", .{self._x, self._y, self._z,});
     }
 

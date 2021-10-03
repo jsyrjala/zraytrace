@@ -25,6 +25,8 @@ pub const Color = struct {
     }
 
     pub fn format(self: Color, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        _ = fmt;
+        _ = options;
         return std.fmt.format(writer, "Color({},{},{})",
                             .{self.r, self.g, self.b});
     }
@@ -93,6 +95,8 @@ pub const Image = struct {
     }
 
     pub fn format(self: Image, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        _ = fmt;
+        _ = options;
         return std.fmt.format(writer, "Image({}x{})",
                             .{self.width, self.height});
     }

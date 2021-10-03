@@ -88,6 +88,8 @@ pub const AABB = struct {
 
     /// Used when printing struct
     pub fn format(self: AABB, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        _ = fmt;
+        _ = options;
         return std.fmt.format(writer, "AABB(Min({d:0.3},{d:0.3},{d:0.3}),Max({d:0.3},{d:0.3},{d:0.3}))",
                             .{self.min.x(), self.min.y(), self.min.z(),
                               self.max.x(), self.max.y(), self.max.z(),});

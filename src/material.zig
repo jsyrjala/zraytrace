@@ -69,8 +69,8 @@ pub const Lambertian = struct {
     }
 
     pub inline fn scatter(material: Lambertian, ray: *const Ray, hit_record: HitRecord) ?Scattering {
-        const scatter_direction = hit_record.normal
-                                    .plus(Sample.randomUnitVector(material.random));
+        _ = ray;
+        const scatter_direction = hit_record.normal.plus(Sample.randomUnitVector(material.random));
         const scattered = Ray.init(hit_record.location, scatter_direction);
         return Scattering.init(scattered, material.texture.albedo(hit_record.texture_coords, hit_record.location));
     }

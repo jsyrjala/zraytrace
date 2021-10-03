@@ -160,6 +160,7 @@ pub const BVHNode = struct {
     }
 
     fn create(allocator: *Allocator, random: *Random, left: *Surface, right: *Surface) ! *Surface {
+        _ = random;
         const aabb = AABB.initAabb(left.aabb(), right.aabb());
         const bvh_node = BVHNode{.left_child = left, .right_child = right, .aabb = aabb};
         const surface = try allocator.create(Surface);
@@ -184,6 +185,7 @@ pub const BVHNode = struct {
     }
 
     pub fn hit(node: *const BVHNode, surface: *const Surface, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
+        _ = surface;
         if (!node.aabb.hitAabb(ray, t_min, t_max)) {
             // no hit on bounding box, can't hit anything inside the bounding box
             return null;

@@ -41,6 +41,8 @@ pub const HitRecord = struct {
     }
 
     pub fn format(self: HitRecord, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        _ = fmt;
+        _ = options;
         return std.fmt.format(writer, "HitRecord(Location({},{},{}),Normal({},{},{}),t={},front_face={})",
                             .{self.location.x(), self.location.y(), location.z(),
                               self.normal.x(), self.normal.y(), normal.z(),
