@@ -58,5 +58,5 @@ test "HitRecord.init" {
     const ray = Ray.init(vec, vec);
     const sphere = Sphere.init(vec, 1.0, &Material.black_metal);
     const surface = Surface.initSphere(sphere);
-    const hit_record = HitRecord.init(&ray, vec, vec, 1.0, &surface, Vec2.origin);
+    _ = HitRecord.init(&ray, vec, vec, 1.0, &surface, Vec2.origin);
 }

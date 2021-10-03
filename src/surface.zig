@@ -70,9 +70,9 @@ test "Surface.hit()" {
     const allocator = &arena.allocator;
 
     const sphere = Sphere.init(Vec3.z_unit, 0.1, &Material.black_metal);
-    const s = Surface.initSphere(sphere);
+    _ = Surface.initSphere(sphere);
     const triangle = Triangle.init(Vec3.x_unit, Vec3.z_unit, Vec3.y_unit, &Material.black_metal);
-    const t = Surface.initTriangle(triangle);
+    _ = Surface.initTriangle(triangle);
     const ray = Ray.init(Vec3.origin, Vec3.x_unit);
 
     var surfaces = ArrayList(Surface).init(allocator);

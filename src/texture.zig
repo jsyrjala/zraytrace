@@ -50,6 +50,7 @@ pub const ImageTexture = struct {
     }
 
     pub fn albedo(self: @This(), texture_coords: Vec2, point: Vec3) Color {
+        _ = point;
         const uu_first = (1.0 - texture_coords.u + self.u_offset);
         var uu = uu_first;
         if (uu_first > 1.0) {
@@ -58,7 +59,6 @@ pub const ImageTexture = struct {
             uu = uu_first + 1.0;
         }
 
-        const v_offset = 0.1;
         const vv_first = texture_coords.v + self.v_offset;
         var vv = vv_first;
         if (vv_first > 1.0) {

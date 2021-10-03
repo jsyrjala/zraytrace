@@ -8,7 +8,9 @@ pub const Sample = struct {
 
     /// Generate random vector where each coordinate is between min and max.
     pub inline fn randomVector(random: *Random, min: BaseFloat, max: BaseFloat) Vec3 {
-        var r = DefaultPrng.init(0).random;
+        // TODO min and max are unused
+        _ = min;
+        _ = max;
         const x_val = random.float(BaseFloat) * 2.0 - 1.0;
         const y_val = random.float(BaseFloat) * 2.0 - 1.0;
         const z_val = random.float(BaseFloat) * 2.0 - 1.0;
@@ -122,7 +124,7 @@ test "perf randomSphere()" {
     const start1 = std.time.milliTimestamp();
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
-        var a = Sample.randomUnitVector(random);
+        _ = Sample.randomUnitVector(random);
         // std.debug.warn("  {} {}\n", .{a, a.length()});
     }
     std.debug.warn("Took {} ms\n", .{std.time.milliTimestamp() - start1});
@@ -134,7 +136,7 @@ test "perf randomUnitVector()" {
     const start1 = std.time.milliTimestamp();
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
-        var a = Sample.randomUnitVector_old(random);
+        _ = Sample.randomUnitVector_old(random);
         // std.debug.warn("  {} {}\n", .{a, a.length()});
     }
     std.debug.warn("Took {} ms\n", .{std.time.milliTimestamp() - start1});

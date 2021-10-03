@@ -47,8 +47,9 @@ pub const Triangle = struct {
     /// https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
     pub fn hit(triangle: *const Triangle, surface: *const Surface, ray: *const Ray, t_min: BaseFloat, t_max: BaseFloat) ? HitRecord{
         const a = triangle.a;
-        const b = triangle.b;
-        const c = triangle.c;
+        // TODO why b and c are unused?
+        // const b = triangle.b;
+        // const c = triangle.c;
         const e1 = triangle.e1;
         const e2 = triangle.e2;
         const det = -ray.direction.dot(triangle.face_normal);
@@ -77,7 +78,7 @@ test "Triangle.init()" {
     const a = Vec3.init(1.0, 0.0, 0.0);
     const b = Vec3.init(0.0, 1.0, 0.0);
     const c = Vec3.init(0.0, 0.0, 1.0);
-    const triangle = Triangle.init(a, b, c, &Material.black_metal);
+    _ = Triangle.init(a, b, c, &Material.black_metal);
 }
 
 test "Triangle.hit() ray doesn't hit the triangle" {

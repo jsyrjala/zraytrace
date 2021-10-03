@@ -140,13 +140,13 @@ test "Material.scatter()" {
     var surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
     const hit = HitRecord.init(&ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, &surface, Vec2.origin);
-    const scattering = material.scatter(&ray, hit);
+    _ = material.scatter(&ray, hit);
 }
 
 test "Lambertian.init()" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
-    const material = &Lambertian.init(random, Texture.initColor(Color.black));
+    _ = &Lambertian.init(random, Texture.initColor(Color.black));
 }
 
 test "Lambertian.scatter()" {
@@ -158,11 +158,11 @@ test "Lambertian.scatter()" {
 
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
     const hit = HitRecord.init(&ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, &surface, Vec2.origin);
-    const scattering = material.scatter(&ray, hit);
+    _ = material.scatter(&ray, hit);
 }
 
 test "Metal.init()" {
-    const material = Metal.init(Texture.initColor(Color.black));
+    _ = Metal.init(Texture.initColor(Color.black));
 }
 
 test "Metal.scatter()" {
@@ -172,13 +172,13 @@ test "Metal.scatter()" {
     const surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, material));
 
     const hit = HitRecord.init(&ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, &surface, Vec2.origin);
-    const scattering = material.scatter(&ray, hit);
+    _ = material.scatter(&ray, hit);
 }
 
 test "Dielectric.init()" {
     var prng = std.rand.DefaultPrng.init(42);
     var random = &prng.random;
-    const material = Dielectric.init(random, 0.2);
+    _ = Dielectric.init(random, 0.2);
 }
 
 test "Dielectric.scatter()" {
@@ -190,6 +190,6 @@ test "Dielectric.scatter()" {
     const ray = Ray.init(Vec3.origin, Vec3.z_unit);
     var surface = Surface.initSphere(Sphere.init(Vec3.z_unit, 10.0, &material));
     const hit = HitRecord.init(&ray, Vec3.z_unit.scale(2.0), Vec3.y_unit, 10.0, &surface, Vec2.origin);
-    const scattering = material.scatter(&ray, hit);
+    _ = material.scatter(&ray, hit);
 }
 

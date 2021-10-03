@@ -115,7 +115,6 @@ test "Image" {
     const image = try Image.init(allocator, 320, 200);
     defer image.deinit();
 
-    const color = image.pixels[1];
     expectEqual(Color.newBlack(), image.pixels[0]);
     expectEqual(Color.newBlack(), image.pixels[63999]);
     expectEqual(@as(usize, 64000), image.pixels.len);

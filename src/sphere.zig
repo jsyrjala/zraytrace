@@ -80,5 +80,5 @@ test "Sphere.init" {
     const sphere = Sphere.init(vec, 10.0, &Material.black_metal);
     const surface = Surface.initSphere(sphere);
     const ray = Ray.init(vec, vec);
-    const hit_record = sphere.hit(&surface, &ray, 0.1, 10000.0);
+    _ = sphere.hit(&surface, &ray, 0.1, 10000.0);
 }

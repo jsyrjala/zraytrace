@@ -256,7 +256,7 @@ test "BVHNode.init()" {
 
     var surfaces = try createSurfaces(allocator, random, 1011);
     defer surfaces.deinit();
-    const bvh_node = BVHNode.init(allocator, random, &surfaces);
+    _ = BVHNode.init(allocator, random, &surfaces);
 }
 
 test "BVHNode.hit()" {
