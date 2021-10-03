@@ -51,7 +51,7 @@ pub const AABB = struct {
         var max_y = -math.inf(BaseFloat);
         var max_z = -math.inf(BaseFloat);
 
-        for (vertexes) |*vertex, i| {
+        for (vertexes) |*vertex| {
             min_x = math.min(min_x, vertex.x());
             min_y = math.min(min_y, vertex.y());
             min_z = math.min(min_z, vertex.z());

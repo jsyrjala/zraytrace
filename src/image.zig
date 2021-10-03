@@ -77,7 +77,7 @@ pub const Image = struct {
 
     pub fn init(allocator: *Allocator, width: u32, height: u32) ! *Image {
         const pixels = try allocator.alloc(Color, width * height);
-        for (pixels) |*pixel, index| {
+        for (pixels) |*pixel| {
             pixel.* = Color.newBlack();
         }
         const image = try allocator.create(Image);

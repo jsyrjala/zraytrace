@@ -149,7 +149,7 @@ pub const Vec3 = struct {
         var x_sum: BaseFloat = 0.0;
         var y_sum: BaseFloat = 0.0;
         var z_sum: BaseFloat = 0.0;
-        for (vectors.items) |*vector, i| {
+        for (vectors.items) |*vector| {
             x_sum += vector._x * len_scale;
             y_sum += vector._y * len_scale;
             z_sum += vector._z * len_scale;
